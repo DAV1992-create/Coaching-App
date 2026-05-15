@@ -19,12 +19,12 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:'Barlow',sans-serif;background:var(--light);color:var(--dark);}
- 
+
 /* SYNC BAR */
 #syncBar{position:fixed;top:0;left:0;right:0;height:3px;z-index:1000;transition:background 0.3s;}
 #syncBar.syncing{background:var(--amber);}
 #syncBar.error{background:var(--red);}
- 
+
 /* HEADER */
 header{background:var(--red);height:56px;display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:300;box-shadow:0 2px 10px rgba(200,16,46,0.4);}
 .logo-img{height:36px;width:auto;filter:brightness(0) invert(1);flex-shrink:0;}
@@ -39,10 +39,10 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 .menu-btn{background:rgba(255,255,255,0.15);border:none;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .menu-btn svg{width:18px;height:18px;fill:white;}
- 
+
 /* LAYOUT */
 .app{display:flex;height:100dvh;padding-top:56px;}
- 
+
 /* SIDEBAR */
 .sidebar{width:210px;min-width:210px;background:var(--sidebar);overflow-y:auto;padding:10px 0 30px;position:fixed;left:0;top:56px;bottom:0;z-index:200;transform:translateX(-100%);transition:transform 0.25s ease;-webkit-overflow-scrolling:touch;}
 .sidebar.open{transform:translateX(0);}
@@ -64,11 +64,18 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .sq-legend{padding:4px 10px 8px;display:flex;flex-direction:column;gap:5px;}
 .sq-leg-row{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(255,255,255,0.4);}
 .sq-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
- 
+
 /* Add Player button in sidebar */
-.sb-add-btn{display:flex;align-items:center;gap:8px;width:calc(100% - 20px);margin:8px 10px;min-height:40px;background:rgba(200,16,46,0.3);border:1px solid rgba(200,16,46,0.5);border-radius:8px;color:white;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;justify-content:center;transition:all 0.15s;}
+.sb-add-btn{display:flex;align-items:center;gap:8px;width:calc(100% - 20px);margin:8px 10px 4px;min-height:40px;background:rgba(200,16,46,0.3);border:1px solid rgba(200,16,46,0.5);border-radius:8px;color:white;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;justify-content:center;transition:all 0.15s;}
 .sb-add-btn:hover,.sb-add-btn:active{background:rgba(200,16,46,0.5);}
- 
+.sb-hidden-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 20px);margin:0 10px 8px;min-height:34px;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.4);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.sb-hidden-btn.active{background:rgba(255,165,0,0.15);border-color:rgba(255,165,0,0.4);color:#ffb347;}
+.sb-hidden-btn:hover{color:white;border-color:rgba(255,255,255,0.25);}
+/* Absent/hidden player card */
+.player-card.absent-card{opacity:0.6;border:2px dashed #ffb347;}
+.restore-btn{width:100%;min-height:36px;border-radius:7px;border:1.5px solid #ffb347;color:#b85c00;background:#fff9f0;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:all 0.15s;}
+.restore-btn:active{background:#ffb347;color:white;}
+
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 .view-nav{background:white;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 10px;position:sticky;top:0;z-index:100;scrollbar-width:none;}
@@ -76,18 +83,18 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .view-tab{background:transparent;border:none;border-bottom:3px solid transparent;padding:0 13px;height:44px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;margin-bottom:-1px;transition:color 0.15s;}
 .view-tab.active{color:var(--red);border-bottom-color:var(--red);}
 .view-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px;-webkit-overflow-scrolling:touch;}
- 
+
 /* GRID */
 #gridView{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:12px;}
 @media(max-width:600px){#gridView{grid-template-columns:1fr;}}
 #listView{display:none;flex-direction:column;gap:4px;}
 #scheduleView,#summaryView{display:none;}
- 
+
 /* PLAYER CARD */
 .player-card{background:white;border-radius:12px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);transition:box-shadow 0.2s;}
 .card-strip{height:5px;}
 .card-body{padding:12px 13px 11px;}
- 
+
 /* Photo row */
 .card-photo-row{display:flex;align-items:flex-start;gap:11px;margin-bottom:9px;}
 .card-photo-wrap{position:relative;flex-shrink:0;width:64px;height:64px;}
@@ -105,7 +112,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .card-club{font-size:11px;color:var(--muted);margin-top:1px;}
 .card-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:#ddd;line-height:1;flex-shrink:0;}
 .card-tags{display:flex;flex-wrap:wrap;gap:3px;align-items:center;margin-top:5px;}
- 
+
 /* Tags */
 .tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;}
 .tag-area{color:white;}
@@ -121,19 +128,19 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .sq-badge.som{background:#f3e5f5;color:#7b1fa2;border:1px solid #ce93d8;}
 .sq-badge.som-ntr{background:#faf0fc;color:#9c5ab8;border:1px solid #e2c0ef;}
 .tag-custom{background:#f0fdf4;color:#15803d;border:1px solid #86efac;}
- 
+
 /* Ratings */
 .ratings-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;}
 .rating-item label{display:block;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
 .stars{display:flex;gap:2px;}
 .star{width:22px;height:22px;cursor:pointer;flex-shrink:0;padding:2px;}
 .star svg{width:100%;height:100%;display:block;}
- 
+
 /* Notes */
 .notes-field{width:100%;background:#f8f8f8;border:1px solid var(--border);border-radius:8px;padding:7px 9px;font-family:'Barlow',sans-serif;font-size:12px;line-height:1.5;color:var(--dark);resize:none;outline:none;min-height:50px;-webkit-appearance:none;}
 .notes-field:focus{border-color:var(--red);background:white;}
 .notes-field::placeholder{color:#ccc;}
- 
+
 /* Decision buttons */
 .dec-row{display:flex;gap:5px;margin-top:8px;}
 .dec-btn{flex:1;min-height:38px;padding:0 4px;border-radius:7px;border:1.5px solid;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;background:transparent;transition:all 0.15s;}
@@ -143,7 +150,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .dec-btn.monitor.active{background:var(--amber);border-color:var(--amber);color:white;}
 .dec-btn.reject{border-color:#ffcdd2;color:var(--reject);}
 .dec-btn.reject.active{background:var(--reject);border-color:var(--reject);color:white;}
- 
+
 /* Card actions row */
 .card-actions{display:flex;gap:5px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
 .card-act-btn{flex:1;min-height:30px;padding:0;border-radius:6px;border:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.15s;}
@@ -151,12 +158,12 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .card-act-btn.absent-btn{color:#c0392b;border-color:#ffcdd2;}
 .card-act-btn.absent-btn:active{background:#fff5f5;}
 .card-act-btn.edit-btn{color:#1565c0;border-color:#c5d9f5;}
- 
+
 /* Card sync bar */
 .card-sync{height:2px;background:transparent;transition:background 0.3s;}
 .card-sync.saving{background:var(--amber);}
 .card-sync.saved{background:var(--green);}
- 
+
 /* LIST VIEW */
 .list-hdr,.list-row{display:grid;grid-template-columns:44px 36px 1fr 80px 70px 90px 120px;gap:8px;align-items:center;padding:8px 11px;border-radius:8px;}
 @media(max-width:750px){.list-hdr,.list-row{grid-template-columns:40px 30px 1fr 65px 100px;}.list-hide{display:none;}}
@@ -177,7 +184,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .ldec.monitor.active{background:var(--amber);border-color:var(--amber);color:white;}
 .ldec.reject{border-color:#ffcdd2;color:var(--reject);}
 .ldec.reject.active{background:var(--reject);border-color:var(--reject);color:white;}
- 
+
 /* SCHEDULE */
 .sched-day{margin-bottom:22px;}
 .sched-hdr{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;letter-spacing:0.05em;text-transform:uppercase;color:var(--red);margin-bottom:10px;padding-bottom:6px;border-bottom:3px solid var(--red);display:flex;align-items:center;gap:12px;}
@@ -198,7 +205,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .fix-btn.active-btn,.fixture.active-game .fix-btn{background:var(--red);color:white;}
 .fix-banner{background:var(--red);color:white;padding:9px 13px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;border-radius:10px;margin-bottom:13px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;}
 .fix-clear{background:rgba(255,255,255,0.2);border:none;color:white;border-radius:5px;padding:4px 11px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;min-height:30px;}
- 
+
 /* SUMMARY */
 .sum-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
 @media(max-width:600px){.sum-stats{grid-template-columns:repeat(2,1fr);}}
@@ -226,7 +233,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .sum-score.mid{color:var(--amber);}
 .sum-notes{font-size:11px;color:var(--muted);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .export-btn{background:var(--red);color:white;border:none;border-radius:8px;padding:11px 26px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;margin-top:16px;min-height:var(--touch);}
- 
+
 /* LIGHTBOX */
 #lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:900;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
 #lightbox.show{display:flex;}
@@ -235,7 +242,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 #lightboxSub{font-size:13px;color:rgba(255,255,255,0.6);margin-top:3px;text-align:center;}
 #lightboxClose{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 #lightboxChange{margin-top:14px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:8px 20px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;min-height:40px;}
- 
+
 /* MODAL — Add/Edit Player */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:800;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.show{display:flex;}
@@ -253,31 +260,31 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
 .modal-btn.primary:active{background:var(--red-dark);}
 .modal-btn.secondary{background:var(--light);color:var(--dark);}
 .modal-btn.danger{background:#fff0f0;color:var(--reject);border:1.5px solid #ffcdd2;}
- 
+
 /* EMPTY */
 .empty{text-align:center;padding:50px 20px;color:var(--muted);}
 .empty h3{font-family:'Barlow Condensed',sans-serif;font-size:20px;color:var(--dark);margin-bottom:6px;}
- 
+
 /* LOADING */
 #loadingOverlay{position:fixed;inset:0;background:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.4s;}
 #loadingOverlay img{height:76px;filter:brightness(0) invert(1);margin-bottom:18px;}
 #loadingOverlay p{color:white;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;opacity:0.9;}
 #loadingOverlay .spin{width:26px;height:26px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:14px;}
- 
+
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-thumb{background:rgba(200,16,46,0.25);border-radius:2px;}
 </style>
 </head>
 <body>
- 
+
 <div id="syncBar"></div>
- 
+
 <div id="loadingOverlay">
   <img src="https://dav1992-create.github.io/o45m-scouting/England_Masters_Logo.png" alt="England Hockey Masters">
   <p>Loading Scouting System</p>
   <div class="spin"></div>
 </div>
- 
+
 <!-- Lightbox -->
 <div id="lightbox">
   <button id="lightboxClose" onclick="closeLightbox()">✕</button>
@@ -286,7 +293,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
   <div id="lightboxSub"></div>
   <button id="lightboxChange" onclick="changePhotoFromLightbox()">📷 Change Photo</button>
 </div>
- 
+
 <!-- Add/Edit Player Modal -->
 <div class="modal-overlay" id="playerModal">
   <div class="modal">
@@ -345,7 +352,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
     </div>
   </div>
 </div>
- 
+
 <header>
   <button class="menu-btn" onclick="toggleSidebar()">
     <svg viewBox="0 0 24 24"><rect y="4" width="24" height="2" rx="1"/><rect y="11" width="24" height="2" rx="1"/><rect y="18" width="24" height="2" rx="1"/></svg>
@@ -360,15 +367,16 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
     <div class="stat-chip">🟡 <span id="monCount">0</span></div>
   </div>
 </header>
- 
+
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
- 
+
 <div class="app">
   <div class="sidebar" id="sidebar">
     <div class="sb-search"><input class="sb-input" type="search" id="searchInput" placeholder="Search player or club…" autocorrect="off" autocapitalize="off"></div>
- 
+
     <button class="sb-add-btn" onclick="openAddModal()">＋ Add Player</button>
- 
+    <button class="sb-hidden-btn" id="showHiddenBtn" onclick="toggleShowHidden()">👁 Show Hidden (<span id="hiddenCount">0</span>)</button>
+
     <span class="sb-label">Area</span>
     <button class="sb-btn active" data-area="ALL" onclick="setArea('ALL')">All Areas <span class="sb-count" id="cnt-ALL">0</span></button>
     <button class="sb-btn" data-area="East" onclick="setArea('East')"><span class="area-dot" style="background:#f5c800;border:1px solid rgba(255,255,255,0.15)"></span>East</button>
@@ -379,7 +387,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
     <button class="sb-btn" data-area="South Central" onclick="setArea('South Central')"><span class="area-dot" style="background:#1a7a3c"></span>South Central</button>
     <button class="sb-btn" data-area="West" onclick="setArea('West')"><span class="area-dot" style="background:#6b1a3a"></span>West</button>
     <button class="sb-btn" data-area="Yorkshire & NE" onclick="setArea('Yorkshire & NE')"><span class="area-dot" style="background:#5ba4cf"></span>Yorkshire & NE</button>
- 
+
     <div class="sb-div"></div>
     <span class="sb-label">Decision</span>
     <button class="sb-btn" data-dec="ALL_D" onclick="setDecFilter('ALL_D')">All <span class="sb-count" id="cnt-ALLD">0</span></button>
@@ -387,7 +395,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
     <button class="sb-btn" data-dec="monitor" onclick="setDecFilter('monitor')">⚡ Monitor <span class="sb-count" id="cnt-MON">0</span></button>
     <button class="sb-btn" data-dec="not-selected" onclick="setDecFilter('not-selected')">✗ Passed <span class="sb-count" id="cnt-REJ">0</span></button>
     <button class="sb-btn" data-dec="unseen" onclick="setDecFilter('unseen')">○ Unseen <span class="sb-count" id="cnt-UN">0</span></button>
- 
+
     <div class="sb-div"></div>
     <span class="sb-label">Position</span>
     <button class="sb-btn" data-pos="ALL_P" onclick="setPosFilter('ALL_P')">All</button>
@@ -395,7 +403,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
     <button class="sb-btn" data-pos="Defender" onclick="setPosFilter('Defender')">Defender</button>
     <button class="sb-btn" data-pos="Midfielder" onclick="setPosFilter('Midfielder')">Midfielder</button>
     <button class="sb-btn" data-pos="Forward" onclick="setPosFilter('Forward')">Forward</button>
- 
+
     <div class="sb-div"></div>
     <span class="sb-label">Squad Status</span>
     <button class="sb-btn active" data-squad="ALL_S" onclick="setSquadFilter('ALL_S')">All <span class="sb-count" id="cnt-SQ-ALL">0</span></button>
@@ -404,7 +412,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
     <button class="sb-btn" data-squad="som" onclick="setSquadFilter('som')">SOM <span class="sb-count" id="cnt-SQ-SOM">0</span></button>
     <button class="sb-btn" data-squad="som-ntr" onclick="setSquadFilter('som-ntr')">SOM NTR <span class="sb-count" id="cnt-SQ-SOMNTR">0</span></button>
     <button class="sb-btn" data-squad="none" onclick="setSquadFilter('none')">No Squad <span class="sb-count" id="cnt-SQ-NONE">0</span></button>
- 
+
     <div class="sb-div"></div>
     <span class="sb-label">Squad Key</span>
     <div class="sq-legend">
@@ -414,7 +422,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
       <div class="sq-leg-row"><div class="sq-dot" style="background:#9c5ab8"></div>SOM NTR</div>
     </div>
   </div>
- 
+
   <div class="main">
     <div class="view-nav">
       <button class="view-tab active" onclick="setView('grid')">Grid</button>
@@ -430,7 +438,7 @@ header{background:var(--red);height:56px;display:flex;align-items:center;padding
     </div>
   </div>
 </div>
- 
+
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const SB_URL='https://yunzbxjgndfdngneydhf.supabase.co';
@@ -438,11 +446,11 @@ const SB_KEY='sb_publishable_a0WnjBJyvWkqNFALG7ZhGA_mMUVzD1C';
 const STORAGE_URL=`${SB_URL}/storage/v1/object/player-photos`;
 const STORAGE_PUBLIC=`${SB_URL}/storage/v1/object/public/player-photos`;
 const POLL_MS=5000;
- 
+
 const AC={'East':'#f5c800','London':'#C8102E','Midlands':'#6a0dad','North West':'#1565c0','South East':'#e86500','South Central':'#1a7a3c','West':'#6b1a3a','Yorkshire & NE':'#5ba4cf'};
 const LIGHT_KITS=['East','Yorkshire & NE'];
 const POSITIONS=['GK','Defender','Midfielder','Forward'];
- 
+
 // ── SCHEDULE ──────────────────────────────────────────────────────────────────
 const SCHED={saturday:[
   {time:'11:00',pitch:'Stirratt',home:'East',away:'Midlands'},
@@ -475,7 +483,7 @@ const SCHED={saturday:[
   {time:'14:20',pitch:'Stirratt',home:'Midlands',away:'Yorkshire & NE'},
   {time:'14:20',pitch:'BGS',home:'East',away:'North West'},
 ]};
- 
+
 // ── BASE PLAYERS (programme) ──────────────────────────────────────────────────
 const BASE_PLAYERS=[
 {id:1,name:"Neal Hadgraft",shirt:"GK",area:"East",club:"Brentwood",position:"GK",pos:"GK",cap:false,squad:"main",is_custom:false},
@@ -621,18 +629,19 @@ const BASE_PLAYERS=[
 {id:141,name:"Kasim Mughal",shirt:"20",area:"Yorkshire & NE",club:"Huddersfield",position:"Forward",pos:"Outfield",cap:false,squad:"",is_custom:false},
 {id:142,name:"Gary Grant",shirt:"21",area:"Yorkshire & NE",club:"Gateshead",position:"Forward",pos:"Outfield",cap:false,squad:"",is_custom:false},
 ];
- 
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let allPlayers=[...BASE_PLAYERS]; // merged base + custom
 let absentIds=new Set();          // IDs of absent/hidden players
+let showHidden=false;             // whether to show hidden players
 let A={};                         // assessments keyed by player id
 let photos={};                    // photo URLs keyed by player id
 let cArea='ALL',cDec='ALL_D',cPos='ALL_P',cSquad='ALL_S',cView='grid',sT='',fixF=null;
 let saveTimers={},lastPollTime=0,lightboxPid=null;
 let editingPlayerId=null;         // for modal edit mode
- 
+
 const hdrs={'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'};
- 
+
 // ── SUPABASE ──────────────────────────────────────────────────────────────────
 async function loadAll(){
   setSyncState('syncing');
@@ -667,7 +676,7 @@ async function loadAll(){
     lastPollTime=Date.now();
   }catch(e){setSyncState('error');}
 }
- 
+
 function normaliseCustom(p){
   return {
     id:p.id, name:p.name, shirt:p.shirt||'', area:p.area, club:p.club,
@@ -676,7 +685,7 @@ function normaliseCustom(p){
     cap:false, squad:p.squad||'', is_custom:true, absent:p.absent||false
   };
 }
- 
+
 async function upsertAssessment(id){
   const s=gs(id);
   setSyncState('syncing');
@@ -692,16 +701,34 @@ async function upsertAssessment(id){
     setTimeout(()=>showCardSync(id,''),1500);
   }catch(e){setSyncState('error');}
 }
- 
+
 async function markAbsent(id){
-  // Store absent status in players table
   await fetch(`${SB_URL}/rest/v1/players`,{
     method:'POST',
     headers:{...hdrs,'Prefer':'resolution=merge-duplicates,return=minimal'},
     body:JSON.stringify({id,is_custom:false,absent:true,name:'',area:'',club:'',position:'',shirt:'',squad:''})
   });
 }
- 
+
+async function unmarkAbsent(id){
+  // Delete the absent record so they return to active
+  await fetch(`${SB_URL}/rest/v1/players?id=eq.${id}&is_custom=eq.false`,{method:'DELETE',headers:hdrs});
+}
+
+function toggleShowHidden(){
+  showHidden=!showHidden;
+  const btn=document.getElementById('showHiddenBtn');
+  btn.classList.toggle('active',showHidden);
+  btn.innerHTML=`${showHidden?'👁 Hiding Hidden':'👁 Show Hidden'} (<span id="hiddenCount">${absentIds.size}</span>)`;
+  closeSidebar();render();
+}
+
+async function restorePlayer(id){
+  absentIds.delete(id);
+  await unmarkAbsent(id);
+  updateCounts();render();
+}
+
 async function saveCustomPlayer(data){
   // data: {name,area,club,position,shirt,squad}
   try{
@@ -726,12 +753,12 @@ async function saveCustomPlayer(data){
     return true;
   }catch(e){return false;}
 }
- 
+
 async function deleteCustomPlayer(id){
   await fetch(`${SB_URL}/rest/v1/players?id=eq.${id}`,{method:'DELETE',headers:hdrs});
   allPlayers=allPlayers.filter(p=>p.id!==id);
 }
- 
+
 async function pollRemote(){
   try{
     const since=new Date(lastPollTime-1000).toISOString();
@@ -765,9 +792,9 @@ async function pollRemote(){
     lastPollTime=Date.now();
   }catch(e){}
 }
- 
+
 function startPolling(){lastPollTime=Date.now();setInterval(pollRemote,POLL_MS);}
- 
+
 // ── PHOTO ─────────────────────────────────────────────────────────────────────
 function triggerPhotoUpload(id){
   const inp=document.createElement('input');
@@ -777,7 +804,7 @@ function triggerPhotoUpload(id){
   inp.onchange=e=>{if(e.target.files[0])uploadPhoto(id,e.target.files[0]);};
   inp.click();
 }
- 
+
 async function uploadPhoto(id,file){
   const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
   const path=`player_${id}.${ext}`;
@@ -801,7 +828,7 @@ async function uploadPhoto(id,file){
     alert('Photo upload failed — check your connection and try again.');
   }
 }
- 
+
 function updatePhotoUI(id){
   const url=photos[id];
   // Card photo
@@ -822,11 +849,11 @@ function updatePhotoUI(id){
       :`<div class="sum-thumb-ph sum-thumb-${id}">👤</div>`;
   });
 }
- 
+
 function photoPlaceholderHTML(id){
   return `<div class="card-photo-placeholder" onclick="triggerPhotoUpload(${id})"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Photo</span></div><div class="photo-uploading photo-uploading-${id}" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,0.85);border-radius:8px;align-items:center;justify-content:center;"><div class="photo-spin"></div></div>`;
 }
- 
+
 function openLightbox(id){
   const p=allPlayers.find(x=>x.id===id);
   if(!p||!photos[id])return;
@@ -839,7 +866,7 @@ function openLightbox(id){
 function closeLightbox(){document.getElementById('lightbox').classList.remove('show');lightboxPid=null;}
 function changePhotoFromLightbox(){if(lightboxPid){closeLightbox();setTimeout(()=>triggerPhotoUpload(lightboxPid),300);}}
 document.getElementById('lightbox').addEventListener('click',e=>{if(e.target===document.getElementById('lightbox'))closeLightbox();});
- 
+
 // ── PLAYER MODAL ──────────────────────────────────────────────────────────────
 function openAddModal(){
   editingPlayerId=null;
@@ -856,7 +883,7 @@ function openAddModal(){
   closeSidebar();
   setTimeout(()=>document.getElementById('fName').focus(),300);
 }
- 
+
 function openEditModal(id){
   const p=allPlayers.find(x=>x.id===id);
   if(!p||!p.is_custom)return;
@@ -872,12 +899,12 @@ function openEditModal(id){
   document.getElementById('modalSaveBtn').textContent='Save Changes';
   document.getElementById('playerModal').classList.add('show');
 }
- 
+
 function closeModal(){
   document.getElementById('playerModal').classList.remove('show');
   editingPlayerId=null;
 }
- 
+
 async function savePlayer(){
   const name=document.getElementById('fName').value.trim();
   const area=document.getElementById('fArea').value;
@@ -893,21 +920,21 @@ async function savePlayer(){
   if(ok){closeModal();updateCounts();render();}
   else{btn.textContent=editingPlayerId?'Save Changes':'Add Player';alert('Failed to save — check your connection.');}
 }
- 
+
 async function deletePlayer(){
   if(!editingPlayerId)return;
   if(!confirm('Remove this player from the scouting system?'))return;
   await deleteCustomPlayer(editingPlayerId);
   closeModal();updateCounts();render();
 }
- 
+
 function markAbsentAndHide(id){
   if(!confirm('Mark this player as absent and hide them?'))return;
   absentIds.add(id);
   markAbsent(id);
   render();updateCounts();
 }
- 
+
 // ── SYNC UI ───────────────────────────────────────────────────────────────────
 function setSyncState(s){
   const dot=document.getElementById('syncDot'),lbl=document.getElementById('syncLabel'),bar=document.getElementById('syncBar');
@@ -918,11 +945,11 @@ function setSyncState(s){
 function showCardSync(id,state){
   document.querySelectorAll(`.csync-${id}`).forEach(el=>el.className=`card-sync csync-${id}${state?' '+state:''}`);
 }
- 
+
 // ── LOCAL STATE ───────────────────────────────────────────────────────────────
 function gs(id){if(!A[id])A[id]={technical:0,tactical:0,physical:0,attitude:0,notes:'',decision:''};return A[id];}
 function avg(id){const s=gs(id),sc=[s.technical,s.tactical,s.physical,s.attitude].filter(x=>x>0);return sc.length?sc.reduce((a,b)=>a+b,0)/sc.length:0;}
- 
+
 // ── FILTERS ───────────────────────────────────────────────────────────────────
 function setArea(a){cArea=a;document.querySelectorAll('[data-area]').forEach(b=>b.classList.toggle('active',b.dataset.area===a));closeSidebar();render();}
 function setDecFilter(d){cDec=d;document.querySelectorAll('[data-dec]').forEach(b=>b.classList.toggle('active',b.dataset.dec===d));closeSidebar();render();}
@@ -937,28 +964,32 @@ function setView(v){
   render();
 }
 document.getElementById('searchInput').addEventListener('input',e=>{sT=e.target.value;render();});
- 
+
 function fp(){
   return allPlayers.filter(p=>{
-    if(absentIds.has(p.id))return false;
-    if(fixF&&p.area!==fixF.home&&p.area!==fixF.away)return false;
-    if(!fixF&&cArea!=='ALL'&&p.area!==cArea)return false;
-    if(cPos!=='ALL_P'&&(p.position||p.pos)!==cPos)return false;
-    if(cSquad!=='ALL_S'&&cSquad!=='none'&&p.squad!==cSquad)return false;
-    if(cSquad==='none'&&p.squad!=='')return false;
-    const s=gs(p.id);
-    if(cDec==='recommended'&&s.decision!=='recommended')return false;
-    if(cDec==='monitor'&&s.decision!=='monitor')return false;
-    if(cDec==='not-selected'&&s.decision!=='not-selected')return false;
-    if(cDec==='unseen'&&s.decision!=='')return false;
+    const isAbsent=absentIds.has(p.id);
+    if(isAbsent&&!showHidden)return false;
+    if(!isAbsent&&showHidden)return false; // in showHidden mode, only show absent
+    if(!showHidden){
+      if(fixF&&p.area!==fixF.home&&p.area!==fixF.away)return false;
+      if(!fixF&&cArea!=='ALL'&&p.area!==cArea)return false;
+      if(cPos!=='ALL_P'&&(p.position||p.pos)!==cPos)return false;
+      if(cSquad!=='ALL_S'&&cSquad!=='none'&&p.squad!==cSquad)return false;
+      if(cSquad==='none'&&p.squad!=='')return false;
+      const s=gs(p.id);
+      if(cDec==='recommended'&&s.decision!=='recommended')return false;
+      if(cDec==='monitor'&&s.decision!=='monitor')return false;
+      if(cDec==='not-selected'&&s.decision!=='not-selected')return false;
+      if(cDec==='unseen'&&s.decision!=='')return false;
+    }
     if(sT){const q=sT.toLowerCase();if(!p.name.toLowerCase().includes(q)&&!p.club.toLowerCase().includes(q)&&!p.area.toLowerCase().includes(q))return false;}
     return true;
   });
 }
- 
+
 function toggleSidebar(){const sb=document.getElementById('sidebar'),ov=document.getElementById('sidebarOverlay'),open=sb.classList.toggle('open');ov.classList.toggle('show',open);}
 function closeSidebar(){if(window.innerWidth<900){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}}
- 
+
 // ── STARS ─────────────────────────────────────────────────────────────────────
 function svgStar(f){const c=f?'#C8102E':'#e0e0e0';return`<svg viewBox="0 0 20 20" fill="${c}"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;}
 function starsH(id,f,v){return Array.from({length:5},(_,i)=>`<span class="star" onclick="setR(${id},'${f}',${i+1})">${svgStar(i<v)}</span>`).join('');}
@@ -973,7 +1004,7 @@ function setD(id,dec){
 }
 function sN(id,v){gs(id).notes=v;debounce(id);}
 function debounce(id){clearTimeout(saveTimers[id]);saveTimers[id]=setTimeout(()=>upsertAssessment(id),800);}
- 
+
 function refreshPlayerUI(id){
   const s=gs(id),p=allPlayers.find(x=>x.id===id);if(!p)return;
   ['technical','tactical','physical','attitude'].forEach(f=>document.querySelectorAll(`[data-stars="${id}-${f}"]`).forEach(el=>el.innerHTML=starsH(id,f,s[f])));
@@ -983,20 +1014,26 @@ function refreshPlayerUI(id){
   document.querySelectorAll(`.notes-${id}`).forEach(el=>{if(document.activeElement!==el)el.value=s.notes;});
   updatePhotoUI(id);
 }
- 
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function sqB(sq){if(!sq)return'';const L={'main':'Main Squad','main-ntr':'Main NTR','som':'SOM','som-ntr':'SOM NTR'};return`<span class="sq-badge ${sq}">${L[sq]}</span>`;}
 function areaTag(area){const lk=LIGHT_KITS.includes(area);return`<span class="tag tag-area${lk?' light':''}" style="background:${AC[area]||'#999'};font-size:9px;padding:1px 6px">${area}</span>`;}
 function posTag(pos){const map={'GK':'tag-gk','Defender':'tag-def','Midfielder':'tag-mid','Forward':'tag-fwd'};return`<span class="tag ${map[pos]||'tag-mid'}">${pos}</span>`;}
- 
+
 // ── RENDER GRID ───────────────────────────────────────────────────────────────
 function renderGrid(pl){
   const el=document.getElementById('gridView');el.innerHTML='';
-  if(!pl.length){el.innerHTML='<div class="empty"><h3>No players match</h3><p>Adjust filters or search.</p></div>';return;}
+  if(!pl.length){
+    el.innerHTML=showHidden
+      ?'<div class="empty"><h3>No hidden players</h3><p>No players have been marked absent.</p></div>'
+      :'<div class="empty"><h3>No players match</h3><p>Adjust filters or search.</p></div>';
+    return;
+  }
   pl.forEach(p=>{
     const s=gs(p.id),ac=AC[p.area]||'#ccc',pos=p.position||p.pos;
+    const isAbsent=absentIds.has(p.id);
     const d=document.createElement('div');
-    d.className=`player-card${s.decision?' '+s.decision:''}`;
+    d.className=`player-card${isAbsent?' absent-card':s.decision?' '+s.decision:''}`;
     d.setAttribute('data-pid',p.id);
     d.innerHTML=`
       <div class="card-strip strip-${p.id}${s.decision?' '+s.decision:''}" style="${!s.decision?'background:'+ac:''}"></div>
@@ -1021,9 +1058,13 @@ function renderGrid(pl){
               ${p.cap?`<span class="tag tag-cap">★ ${p.capType}</span>`:''}
               ${sqB(p.squad)}
               ${p.is_custom?'<span class="tag tag-custom">Added</span>':''}
+              ${isAbsent?'<span class="tag" style="background:#fff3cd;color:#b85c00;border:1px solid #ffe69c">Absent</span>':''}
             </div>
           </div>
         </div>
+        ${isAbsent ? `
+          <button class="restore-btn" onclick="restorePlayer(${p.id})">↩ Restore Player</button>
+        ` : `
         <div class="ratings-grid">
           <div class="rating-item"><label>Technical</label><div class="stars" data-stars="${p.id}-technical">${starsH(p.id,'technical',s.technical)}</div></div>
           <div class="rating-item"><label>Tactical</label><div class="stars" data-stars="${p.id}-tactical">${starsH(p.id,'tactical',s.tactical)}</div></div>
@@ -1039,13 +1080,13 @@ function renderGrid(pl){
         <div class="card-actions">
           <button class="card-act-btn absent-btn" onclick="markAbsentAndHide(${p.id})">👁 Hide Player</button>
           ${p.is_custom?`<button class="card-act-btn edit-btn" onclick="openEditModal(${p.id})">✎ Edit</button>`:''}
-        </div>
+        </div>`}
       </div>
       <div class="card-sync csync-${p.id}"></div>`;
     el.appendChild(d);
   });
 }
- 
+
 // ── RENDER LIST ───────────────────────────────────────────────────────────────
 function renderList(pl){
   const el=document.getElementById('listView');el.innerHTML='';
@@ -1078,7 +1119,7 @@ function renderList(pl){
     el.appendChild(r);
   });
 }
- 
+
 // ── RENDER SCHEDULE ───────────────────────────────────────────────────────────
 function renderSchedule(){
   const el=document.getElementById('scheduleView');el.innerHTML='';
@@ -1105,7 +1146,7 @@ function renderSchedule(){
 }
 function filterFix(h,a){fixF=(fixF&&fixF.home===h&&fixF.away===a)?null:{home:h,away:a};setView('grid');}
 function clearFix(){fixF=null;render();}
- 
+
 // ── RENDER SUMMARY ────────────────────────────────────────────────────────────
 function renderSummary(){
   const el=document.getElementById('summaryView');el.innerHTML='';
@@ -1136,7 +1177,7 @@ function renderSummary(){
   if(mons.length) el.innerHTML+=`<div class="sum-sec-hdr mh">⚡ Monitor List (${mons.length})</div><div class="sum-rows">${sbs(mons).map(p=>pRow(p,'mon')).join('')}</div>`;
   if(recs.length||mons.length) el.innerHTML+=`<button class="export-btn" onclick="expCSV()">📥 Export Shortlist CSV</button>`;
 }
- 
+
 // ── COUNTS ────────────────────────────────────────────────────────────────────
 function updateCounts(){
   const vis=allPlayers.filter(p=>!absentIds.has(p.id));
@@ -1156,8 +1197,12 @@ function updateCounts(){
   document.getElementById('cnt-SQ-SOM').textContent=vis.filter(p=>p.squad==='som').length;
   document.getElementById('cnt-SQ-SOMNTR').textContent=vis.filter(p=>p.squad==='som-ntr').length;
   document.getElementById('cnt-SQ-NONE').textContent=vis.filter(p=>!p.squad).length;
+  // Update hidden count in button
+  const hc=absentIds.size;
+  const hBtn=document.getElementById('showHiddenBtn');
+  if(hBtn) hBtn.innerHTML=`${showHidden?'👁 Hide Hidden':'👁 Show Hidden'} (<span id="hiddenCount">${hc}</span>)`;
 }
- 
+
 // ── EXPORT ────────────────────────────────────────────────────────────────────
 function expCSV(){
   const rows=[['Name','Club','Area','Position','Shirt','Squad','Technical','Tactical','Physical','Attitude','Overall','Decision','Notes']];
@@ -1169,7 +1214,7 @@ function expCSV(){
   a.href=URL.createObjectURL(new Blob([rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n')],{type:'text/csv'}));
   a.download='england_o45m_shortlist_2026.csv';a.click();
 }
- 
+
 // ── MAIN RENDER ───────────────────────────────────────────────────────────────
 function render(){
   const pl=fp();
@@ -1179,7 +1224,7 @@ function render(){
   else renderSummary();
   updateCounts();
 }
- 
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init(){
   await loadAll();
