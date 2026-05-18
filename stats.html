@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stats · England Masters</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="stats.css">
+<script src="supabase-client.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<nav class="nav-top" aria-label="Main navigation">
+  <a class="nav-brand" href="dashboard.html">
+    <span class="nav-badge">EM</span>
+    <span class="nav-text">
+      <span class="nav-name">England Masters</span>
+      <span class="nav-sub">Men O45s</span>
+    </span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="dashboard.html">Dashboard</a>
+    <a class="nav-link" href="dashboard.html">Squad</a>
+    <a class="nav-link" href="matchday.html">Matchday</a>
+    <a class="nav-link active" href="stats.html">Stats</a>
+    <a class="nav-link" href="contacts.html">Contacts</a>
+  </div>
+  <div class="nav-actions">
+    <button class="btn btn-sm" type="button" id="exportStatsBtn">Export</button>
+  </div>
+</nav>
+
+<main class="page">
+  <header class="page-header">
+    <h1>Statistics &amp; results</h1>
+    <p class="text-secondary">Match results, season statistics, and player leaderboard.</p>
+  </header>
+
+  <div class="stats-filters">
+    <select id="tournamentFilter" aria-label="Tournament type">
+      <option value="all">All tournaments</option>
+    </select>
+  </div>
+
+  <section class="grid-stats section-gap">
+    <div class="stat-card"><div class="stat-label">Matches</div><div class="stat-value" id="stat-matches">—</div><div class="stat-sub">played</div></div>
+    <div class="stat-card">
+      <div class="stat-label">Record</div>
+      <div class="stat-value" id="stat-record" style="font-size:18px;">—</div>
+      <div class="stat-sub" id="stat-winrate">—</div>
+    </div>
+    <div class="stat-card"><div class="stat-label">Scored</div><div class="stat-value" id="stat-scored" style="color:var(--green);">—</div><div class="stat-sub" id="stat-avg-scored">—</div></div>
+    <div class="stat-card"><div class="stat-label">Conceded</div><div class="stat-value" id="stat-conceded" style="color:var(--red);">—</div><div class="stat-sub" id="stat-avg-conc">—</div></div>
+  </section>
+
+  <div class="stat-card section-gap" style="background:var(--white);border:0.5px solid var(--border);" id="topScorerCard">
+    <div class="stat-label">Top scorer</div>
+    <div id="topScorerBody" style="display:flex;align-items:center;gap:12px;margin-top:6px;">
+      <span class="text-secondary text-small">No goals recorded yet.</span>
+    </div>
+  </div>
+
+  <div class="tab-strip">
+    <button class="active" data-tab="results" type="button">Results</button>
+    <button data-tab="leaderboard" type="button">Leaderboard</button>
+  </div>
+
+  <section class="tab-pane active" id="pane-results">
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="data-table results-table">
+          <thead>
+            <tr>
+              <th>Date</th><th>Opponent</th><th>Tournament</th><th>Venue</th><th>Score</th><th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"><tr><td colspan="6" style="text-align:center;padding:32px;" class="text-secondary">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-pane" id="pane-leaderboard">
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="leaderboardTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-col="rank" data-type="num">#</th>
+              <th class="sortable" data-col="name">Player</th>
+              <th class="sortable" data-col="pos">Pos</th>
+              <th class="sortable" data-col="club">Club</th>
+              <th class="sortable" data-col="caps" data-type="num">Caps</th>
+              <th class="sortable" data-col="goals" data-type="num">Goals</th>
+              <th class="sortable" data-col="assists" data-type="num">Assists</th>
+              <th class="sortable" data-col="cards" data-type="num">Cards</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"><tr><td colspan="9" style="text-align:center;padding:32px;" class="text-secondary">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="chart-grid">
+    <div class="chart-wrap">
+      <div class="chart-title">Goals scored vs conceded · recent matches</div>
+      <div class="chart-canvas-wrap"><canvas id="goalsChart"></canvas></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Caps per player</div>
+      <div class="chart-canvas-wrap"><canvas id="capsChart"></canvas></div>
+    </div>
+  </section>
+</main>
+
+<nav class="nav-tabs" aria-label="Mobile navigation">
+  <a class="tab-item" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a>
+  <a class="tab-item" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Squad</a>
+  <a class="tab-item" href="matchday.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Matchday</a>
+  <a class="tab-item active" href="stats.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Stats</a>
+  <a class="tab-item" href="contacts.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>More</a>
+</nav>
+
+<div class="modal-overlay hidden" id="playerCardModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="cardModalTitle">Shareable card</div>
+      <button class="btn btn-ghost btn-icon" type="button" id="closeCardModal">✕</button>
+    </div>
+    <div class="player-card-canvas-wrap">
+      <canvas id="playerCardCanvas" width="400" height="400"></canvas>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="downloadCardBtn" type="button">Download PNG</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+let matches = [];
+let players = [];
+let events = [];
+let lineups = [];
+
+const posBadgeClass = { GK:'badge-green', DEF:'badge-amber', MID:'badge-blue', FWD:'badge-blue' };
+
+async function loadAll() {
+  const ctx = await window.auth.requireAuth(); if (!ctx) return;
+  if (ctx.demo) return;
+  const supa = await window.sb();
+
+  // Pull data
+  const [mRes, pRes, tRes] = await Promise.all([
+    supa.from('matches').select('*, tournaments(name, tournament_type)').eq('org_id', ctx.orgId).eq('status','complete').order('match_date', { ascending: false }),
+    supa.from('players').select('*').eq('org_id', ctx.orgId),
+    supa.from('tournaments').select('id, name').eq('org_id', ctx.orgId).order('date', { ascending: false })
+  ]);
+  matches = mRes.data || [];
+  players = pRes.data || [];
+
+  // Populate tournament filter
+  const tSel = document.getElementById('tournamentFilter');
+  tSel.innerHTML = '<option value="all">All tournaments</option>' +
+    (tRes.data || []).map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  tSel.addEventListener('change', render);
+
+  // Pull events and lineups across all matches (single round-trip each)
+  const matchIds = matches.map(m => m.id);
+  if (matchIds.length) {
+    const [eRes, lRes] = await Promise.all([
+      supa.from('match_events').select('*').in('match_id', matchIds),
+      supa.from('match_lineups').select('*').in('match_id', matchIds)
+    ]);
+    events = eRes.data || [];
+    lineups = lRes.data || [];
+  }
+
+  render();
+}
+
+function render() {
+  const filter = document.getElementById('tournamentFilter').value;
+  const filteredMatches = filter === 'all' ? matches : matches.filter(m => m.tournament_id === filter);
+  const filteredIds = new Set(filteredMatches.map(m => m.id));
+  const filteredEvents = events.filter(e => filteredIds.has(e.match_id));
+  const filteredLineups = lineups.filter(l => filteredIds.has(l.match_id));
+
+  renderSummary(filteredMatches);
+  renderResults(filteredMatches);
+  renderTopScorer(filteredEvents);
+  renderLeaderboard(filteredLineups, filteredEvents);
+  renderCharts(filteredMatches);
+}
+
+function renderSummary(ms) {
+  const w = ms.filter(m => m.score_home > m.score_away).length;
+  const d = ms.filter(m => m.score_home === m.score_away).length;
+  const l = ms.filter(m => m.score_home < m.score_away).length;
+  const scored   = ms.reduce((s,m) => s + (m.score_home||0), 0);
+  const conceded = ms.reduce((s,m) => s + (m.score_away||0), 0);
+  document.getElementById('stat-matches').textContent = ms.length;
+  document.getElementById('stat-record').innerHTML =
+    `<span style="color:var(--green)">${w}W</span> <span style="color:var(--amber)">${d}D</span> <span style="color:var(--red)">${l}L</span>`;
+  document.getElementById('stat-winrate').textContent =
+    ms.length ? `win rate ${Math.round((w/ms.length)*100)}%` : '—';
+  document.getElementById('stat-scored').textContent = scored;
+  document.getElementById('stat-conceded').textContent = conceded;
+  document.getElementById('stat-avg-scored').textContent = ms.length ? `${(scored/ms.length).toFixed(1)} per match` : '—';
+  document.getElementById('stat-avg-conc').textContent   = ms.length ? `${(conceded/ms.length).toFixed(1)} per match` : '—';
+}
+
+function renderResults(ms) {
+  const body = document.getElementById('resultsBody');
+  if (ms.length === 0) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;" class="text-secondary">No matches yet. Run a match to see results.</td></tr>';
+    return;
+  }
+  body.innerHTML = ms.map((m, i) => {
+    const result = m.score_home > m.score_away ? 'W' : (m.score_home < m.score_away ? 'L' : 'D');
+    const d = new Date(m.match_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const tName = m.tournaments ? m.tournaments.name : '—';
+    const matchEvents = events.filter(e => e.match_id === m.id);
+    const scorers = matchEvents.filter(e => e.event_type === 'goal').map(e => e.text.replace('Goal — ','')).join(', ') || '—';
+    const cards   = matchEvents.filter(e => e.event_type === 'yellow' || e.event_type === 'red').map(e => e.text).join('; ') || '—';
+    const subs    = matchEvents.filter(e => e.event_type === 'sub').map(e => e.text).join('; ') || '—';
+    return `
+      <tr data-row="${i}" style="cursor:pointer;">
+        <td>${d}</td><td>${m.opponent}</td><td>${tName}</td><td>${m.venue||''}</td>
+        <td class="text-mono">${m.score_home}–${m.score_away}</td>
+        <td><span class="result-badge ${result}">${result}</span></td>
+      </tr>
+      <tr class="result-detail-row hidden" data-detail="${i}">
+        <td colspan="6">
+          <strong>Goalscorers:</strong> ${scorers}<br>
+          <strong>Cards:</strong> ${cards}<br>
+          <strong>Subs:</strong> ${subs}
+        </td>
+      </tr>
+    `;
+  }).join('');
+  body.querySelectorAll('tr[data-row]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const d = body.querySelector(`tr[data-detail="${tr.dataset.row}"]`);
+      if (d) d.classList.toggle('hidden');
+    });
+  });
+}
+
+function renderTopScorer(evs) {
+  const goals = evs.filter(e => e.event_type === 'goal' && e.player_id);
+  if (goals.length === 0) {
+    document.getElementById('topScorerBody').innerHTML = '<span class="text-secondary text-small">No goals recorded yet.</span>';
+    return;
+  }
+  const tally = {};
+  goals.forEach(g => { tally[g.player_id] = (tally[g.player_id] || 0) + 1; });
+  const topId = Object.entries(tally).sort((a,b) => b[1]-a[1])[0][0];
+  const p = players.find(x => x.id === topId);
+  if (!p) return;
+  const init = p.initials || (p.name||'').split(/\s+/).map(s=>s[0]).slice(0,2).join('').toUpperCase();
+  const posCls = {GK:'avatar-gk',DEF:'avatar-def',MID:'avatar-mid',FWD:'avatar-fwd'}[p.position] || 'avatar-default';
+  document.getElementById('topScorerBody').innerHTML = `
+    <span class="avatar avatar-lg ${posCls}">${init}</span>
+    <div>
+      <div style="font-size:16px;font-weight:500;">${p.name}</div>
+      <div class="text-small text-secondary">${[p.club,p.position].filter(Boolean).join(' · ')} · ${tally[topId]} goal${tally[topId]===1?'':'s'}</div>
+    </div>`;
+}
+
+let currentSort = { col: 'goals', dir: 'desc' };
+
+function renderLeaderboard(filteredLineups, filteredEvents) {
+  // Caps per player
+  const caps = {};
+  filteredLineups.forEach(l => { caps[l.player_id] = (caps[l.player_id]||0) + 1; });
+  // Goals + cards per player
+  const goals = {}, cards = {};
+  filteredEvents.forEach(e => {
+    if (!e.player_id) return;
+    if (e.event_type === 'goal') goals[e.player_id] = (goals[e.player_id]||0) + 1;
+    if (e.event_type === 'yellow' || e.event_type === 'red') cards[e.player_id] = (cards[e.player_id]||0) + 1;
+  });
+
+  let rows = players.map(p => ({
+    id: p.id,
+    name: p.name,
+    pos: p.position,
+    club: p.club,
+    caps: caps[p.id] || 0,
+    goals: goals[p.id] || 0,
+    assists: 0, // not tracked yet
+    cards: cards[p.id] || 0
+  }));
+
+  // Sort
+  rows.sort((a,b) => {
+    const av = a[currentSort.col], bv = b[currentSort.col];
+    if (typeof av === 'number') return currentSort.dir === 'asc' ? av - bv : bv - av;
+    return currentSort.dir === 'asc' ? String(av||'').localeCompare(String(bv||'')) : String(bv||'').localeCompare(String(av||''));
+  });
+  rows.forEach((r, i) => r.rank = i + 1);
+
+  const tbody = document.getElementById('leaderboardBody');
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;" class="text-secondary">No players yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(p => {
+    let cls = '';
+    if (currentSort.col === 'goals' && currentSort.dir === 'desc') {
+      if (p.rank === 1 && p.goals > 0) cls = 'rank-gold';
+      else if (p.rank === 2 && p.goals > 0) cls = 'rank-silver';
+      else if (p.rank === 3 && p.goals > 0) cls = 'rank-bronze';
+    }
+    return `
+      <tr class="${cls}">
+        <td class="text-mono">${p.rank}</td>
+        <td><strong>${p.name||''}</strong></td>
+        <td><span class="badge ${posBadgeClass[p.pos]||'badge-gray'}">${p.pos||''}</span></td>
+        <td>${p.club||''}</td>
+        <td class="text-mono">${p.caps}</td>
+        <td class="text-mono">${p.goals}</td>
+        <td class="text-mono">${p.assists}</td>
+        <td class="text-mono">${p.cards}</td>
+        <td><button class="btn btn-sm" data-action="card" data-name="${p.name||''}" data-pos="${p.pos||''}" data-caps="${p.caps}" data-goals="${p.goals}" data-assists="${p.assists}" type="button">Card</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+document.querySelectorAll('#leaderboardTable .sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (currentSort.col === col) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+    else { currentSort.col = col; currentSort.dir = th.dataset.type === 'num' ? 'desc' : 'asc'; }
+    document.querySelectorAll('#leaderboardTable .sortable').forEach(h => h.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(currentSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    render();
+  });
+});
+
+document.querySelectorAll('.tab-strip button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tab-strip button').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('pane-' + b.dataset.tab).classList.add('active');
+  });
+});
+
+let goalsChart = null, capsChart = null;
+function renderCharts(ms) {
+  const recent = ms.slice(0, 10).reverse();
+  const labels = recent.map(m => (m.opponent || '').slice(0, 4).toUpperCase());
+
+  if (goalsChart) goalsChart.destroy();
+  goalsChart = new Chart(document.getElementById('goalsChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Scored',   data: recent.map(m => m.score_home), backgroundColor: '#185FA5' },
+        { label: 'Conceded', data: recent.map(m => m.score_away), backgroundColor: '#F8B4B4' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 10 } } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } }, x: { ticks: { font: { size: 11 } } } }
+    }
+  });
+
+  // Caps per player
+  const caps = {};
+  lineups.forEach(l => { caps[l.player_id] = (caps[l.player_id]||0) + 1; });
+  const cRows = players.map(p => ({ name: p.name, caps: caps[p.id]||0 }))
+                       .filter(r => r.caps > 0)
+                       .sort((a,b) => b.caps - a.caps).slice(0, 12);
+
+  if (capsChart) capsChart.destroy();
+  capsChart = new Chart(document.getElementById('capsChart'), {
+    type: 'bar',
+    data: {
+      labels: cRows.map(r => (r.name||'').split(' ').map(s=>s[0]).join('').toUpperCase()),
+      datasets: [{ data: cRows.map(r => r.caps), backgroundColor: '#185FA5' }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, ticks: { font: { size: 11 } } }, y: { ticks: { font: { size: 11 } } } }
+    }
+  });
+}
+
+/* Player card modal */
+const cardModal = document.getElementById('playerCardModal');
+const canvas = document.getElementById('playerCardCanvas');
+const ctx = canvas.getContext('2d');
+
+function drawCard({ name, pos, caps, goals, assists }) {
+  ctx.fillStyle = '#0C1B2E'; ctx.fillRect(0,0,400,400);
+  ctx.fillStyle = '#185FA5'; ctx.fillRect(0,0,400,8);
+  ctx.fillStyle = '#185FA5'; ctx.fillRect(30,30,50,50);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('EM', 55, 62);
+  ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = '500 13px sans-serif';
+  ctx.fillText('ENGLAND MASTERS', 95, 50);
+  ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '11px sans-serif';
+  ctx.fillText('Men O45s · 2025–26', 95, 68);
+  ctx.fillStyle = '#fff'; ctx.font = '600 28px sans-serif';
+  ctx.fillText(name, 30, 145);
+  ctx.fillStyle = '#EAF3DE'; ctx.font = '500 14px sans-serif';
+  ctx.fillText(pos || '', 30, 170);
+  const stats = [{label:'CAPS',value:caps},{label:'GOALS',value:goals},{label:'ASSISTS',value:assists}];
+  stats.forEach((s, i) => {
+    const x = 30 + i * 120;
+    ctx.fillStyle = '#185FA5'; ctx.fillRect(x,220,100,100);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 38px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(String(s.value), x+50, 275);
+    ctx.font = '500 10px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(s.label, x+50, 305);
+  });
+  ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '10px sans-serif';
+  ctx.fillText('England Masters · 2025–26', 30, 370);
+}
+
+document.getElementById('leaderboardBody').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action="card"]'); if (!btn) return;
+  drawCard({
+    name: btn.dataset.name, pos: btn.dataset.pos,
+    caps: btn.dataset.caps, goals: btn.dataset.goals, assists: btn.dataset.assists
+  });
+  document.getElementById('cardModalTitle').textContent = `Shareable card · ${btn.dataset.name}`;
+  cardModal.classList.remove('hidden');
+});
+document.getElementById('closeCardModal').addEventListener('click', () => cardModal.classList.add('hidden'));
+cardModal.addEventListener('click', e => { if (e.target === cardModal) cardModal.classList.add('hidden'); });
+
+document.getElementById('downloadCardBtn').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.download = 'player-card.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+});
+
+document.getElementById('exportStatsBtn').addEventListener('click', () => {
+  const headers = ['Date','Opponent','Tournament','Venue','ScoreHome','ScoreAway','Result'];
+  const rows = matches.map(m => {
+    const r = m.score_home > m.score_away ? 'W' : (m.score_home < m.score_away ? 'L' : 'D');
+    return [m.match_date, m.opponent, m.tournaments ? m.tournaments.name : '', m.venue || '', m.score_home, m.score_away, r];
+  });
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'results.csv'; a.click();
+});
+
+loadAll();
+</script>
+
+</body>
+</html>
