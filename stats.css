@@ -1,0 +1,115 @@
+/* ============================================================
+   stats.css — results, leaderboard, charts
+   ============================================================ */
+
+.stats-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.stats-filters select { width: auto; min-width: 160px; }
+
+.tab-strip {
+  display: flex;
+  border-bottom: 0.5px solid var(--border);
+  margin: 20px 0 16px;
+}
+.tab-strip button {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  min-height: 44px;
+}
+.tab-strip button.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* Results */
+.results-table th,
+.results-table td {
+  font-size: 13px;
+}
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+.result-badge.W { background: var(--green-light); color: var(--green-dark); }
+.result-badge.D { background: var(--amber-light); color: var(--amber-dark); }
+.result-badge.L { background: var(--red-light);   color: var(--red-dark); }
+
+.results-table tbody tr { cursor: pointer; }
+.result-detail-row td {
+  background: var(--surface);
+  padding: 14px 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.result-detail-row.hidden { display: none; }
+
+/* Leaderboard rank highlights */
+.rank-gold   td:first-child { box-shadow: inset 4px 0 0 #BA7517; font-weight: 600; }
+.rank-silver td:first-child { box-shadow: inset 4px 0 0 #888780; font-weight: 600; }
+.rank-bronze td:first-child { box-shadow: inset 4px 0 0 #CD7F32; font-weight: 600; }
+.rank-gold   { background: rgba(186, 117, 23, 0.04); }
+.rank-silver { background: rgba(136, 135, 128, 0.04); }
+.rank-bronze { background: rgba(205, 127, 50, 0.04); }
+
+/* Charts grid */
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+@media (max-width: 767px) {
+  .chart-grid { grid-template-columns: 1fr; }
+}
+.chart-wrap {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 0.5px solid var(--border);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+}
+.chart-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.chart-canvas-wrap { position: relative; height: 280px; }
+
+/* Player card modal canvas */
+.player-card-canvas-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: var(--surface);
+}
+#playerCardCanvas {
+  background: var(--navy);
+  border-radius: var(--radius-lg);
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 599px) {
+  .data-table { font-size: 12px; }
+  .data-table thead th,
+  .data-table tbody td { padding: 8px 8px; }
+}
