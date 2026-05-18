@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Player contact directory">
+<title>Contacts · England Masters</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="contacts.css">
+<script src="supabase-client.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<nav class="nav-top" aria-label="Main navigation">
+  <a class="nav-brand" href="dashboard.html">
+    <span class="nav-badge">EM</span>
+    <span class="nav-text">
+      <span class="nav-name">England Masters</span>
+      <span class="nav-sub">Men O45s</span>
+    </span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="dashboard.html">Dashboard</a>
+    <a class="nav-link" href="dashboard.html">Squad</a>
+    <a class="nav-link" href="matchday.html">Matchday</a>
+    <a class="nav-link" href="stats.html">Stats</a>
+    <a class="nav-link active" href="contacts.html">Contacts</a>
+  </div>
+  <div class="nav-actions">
+    <a class="btn btn-primary btn-sm" href="dashboard.html">+ Add via squad</a>
+  </div>
+</nav>
+
+<main class="page">
+  <header class="page-header">
+    <h1>Contacts</h1>
+    <p class="text-secondary">Tap to call, message or email — fast access for matchday.</p>
+  </header>
+
+  <div class="contacts-toolbar">
+    <input type="search" id="contactsSearch" placeholder="Search by name, club or area...">
+    <div class="toolbar-row">
+      <select id="sortBy" aria-label="Sort by">
+        <option value="name">A–Z</option>
+        <option value="area">By area</option>
+        <option value="pos">By position</option>
+        <option value="status">By status</option>
+      </select>
+      <div class="filter-row" id="posFilters">
+        <button class="filter-pill active" data-pos="all" type="button">All</button>
+        <button class="filter-pill" data-pos="GK"  type="button">GK</button>
+        <button class="filter-pill" data-pos="DEF" type="button">DEF</button>
+        <button class="filter-pill" data-pos="MID" type="button">MID</button>
+        <button class="filter-pill" data-pos="FWD" type="button">FWD</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="contacts-grid" id="contactsGrid">
+    <div class="player-list-empty" style="grid-column:1/-1;background:white;border-radius:12px;border:0.5px solid var(--border);">Loading contacts…</div>
+  </div>
+</main>
+
+<div class="message-bar">
+  <div class="message-bar-inner">
+    <span class="message-bar-text" id="messageBarText">Message all 0 players</span>
+    <button class="btn btn-primary" type="button" id="messageAllBtn">Send group message →</button>
+  </div>
+</div>
+
+<nav class="nav-tabs" aria-label="Mobile navigation">
+  <a class="tab-item" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a>
+  <a class="tab-item" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Squad</a>
+  <a class="tab-item" href="matchday.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Matchday</a>
+  <a class="tab-item" href="stats.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Stats</a>
+  <a class="tab-item active" href="contacts.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>More</a>
+</nav>
+
+<div class="modal-overlay hidden" id="messageModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Send group message</div>
+      <button class="btn btn-ghost btn-icon" type="button" id="closeMsgModal">✕</button>
+    </div>
+    <div class="modal-body stack">
+      <button class="btn btn-full" type="button" id="msgEmail">✉️  Email all (BCC)</button>
+      <button class="btn btn-full" type="button" id="msgCopy">📋  Copy all phone numbers</button>
+      <button class="btn btn-full" type="button" id="msgWA">💬  WhatsApp group instructions</button>
+      <div class="text-small text-secondary" id="msgInstructions" style="display:none;padding-top:8px;border-top:0.5px solid var(--border);">
+        To create a WhatsApp group: open WhatsApp → New chat → New group → add each player from your contacts.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let contacts = [];
+let searchQuery = '';
+let sortBy = 'name';
+let posFilter = 'all';
+
+const posClass = { GK:'avatar-gk', DEF:'avatar-def', MID:'avatar-mid', FWD:'avatar-fwd' };
+const statusBadge = {
+  main:'<span class="badge badge-main">Main</span>',
+  ntr:'<span class="badge badge-ntr">NTR</span>',
+  som:'<span class="badge badge-som">SOM</span>',
+  'som-ntr':'<span class="badge badge-som-ntr">SOM NTR</span>'
+};
+
+async function loadContacts() {
+  const ctx = await window.auth.requireAuth(); if (!ctx) return;
+  if (ctx.demo) return;
+  const supa = await window.sb();
+  const { data, error } = await supa.from('players').select('*').eq('org_id', ctx.orgId).order('name');
+  if (error) { console.error(error); return; }
+  contacts = data || [];
+  render();
+}
+
+function initials(name) { return (name||'').split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase(); }
+
+function getFiltered() {
+  const q = searchQuery.toLowerCase().trim();
+  let arr = contacts.filter(c => {
+    const matches = !q || (c.name||'').toLowerCase().includes(q) || (c.club||'').toLowerCase().includes(q) || (c.area||'').toLowerCase().includes(q);
+    const matchPos = posFilter === 'all' || c.position === posFilter;
+    return matches && matchPos;
+  });
+  if (sortBy === 'name')   arr.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  if (sortBy === 'area')   arr.sort((a,b) => (a.area||'').localeCompare(b.area||''));
+  if (sortBy === 'pos')    arr.sort((a,b) => ['GK','DEF','MID','FWD'].indexOf(a.position) - ['GK','DEF','MID','FWD'].indexOf(b.position));
+  if (sortBy === 'status') arr.sort((a,b) => (a.status||'').localeCompare(b.status||''));
+  return arr;
+}
+
+function render() {
+  const arr = getFiltered();
+  const grid = document.getElementById('contactsGrid');
+  document.getElementById('messageBarText').textContent = `Message all ${arr.length} player${arr.length === 1 ? '' : 's'}`;
+  if (contacts.length === 0) {
+    grid.innerHTML = '<div class="player-list-empty" style="grid-column:1/-1;background:white;border-radius:12px;border:0.5px solid var(--border);">No contacts yet. Add players from the dashboard.</div>';
+    return;
+  }
+  if (arr.length === 0) {
+    grid.innerHTML = '<div class="player-list-empty" style="grid-column:1/-1;background:white;border-radius:12px;border:0.5px solid var(--border);">No contacts match your search.</div>';
+    return;
+  }
+  grid.innerHTML = arr.map(c => {
+    const init = c.initials || initials(c.name);
+    const phone = c.phone || '';
+    const email = c.email || '';
+    return `
+    <article class="contact-card" data-id="${c.id}">
+      <header class="contact-head">
+        <span class="avatar avatar-lg ${posClass[c.position]||'avatar-default'}">${init}</span>
+        <div class="contact-head-info">
+          <div class="contact-name">${c.name} ${c.shirt_number?'<span class="shirt-pill">#'+c.shirt_number+'</span>':''} ${statusBadge[c.status]||''}</div>
+          <div class="contact-sub">${[c.club,c.area,c.position].filter(Boolean).join(' · ')}</div>
+        </div>
+      </header>
+      <div class="contact-body">
+        <a class="contact-action" href="${phone?'tel:'+phone:'#'}">
+          <span class="contact-icon">📞</span>
+          <span class="contact-action-label">Call</span>
+          <span class="contact-action-meta">${phone||'No number'}</span>
+        </a>
+        <a class="contact-action" href="${phone?'https://wa.me/'+phone.replace(/[^0-9]/g,''):'#'}" target="_blank" rel="noopener">
+          <span class="contact-icon">💬</span>
+          <span class="contact-action-label">WhatsApp</span>
+        </a>
+        <a class="contact-action" href="${email?'mailto:'+email:'#'}">
+          <span class="contact-icon">✉️</span>
+          <span class="contact-action-label">Email</span>
+          <span class="contact-action-meta">${email||'No email'}</span>
+        </a>
+        <button class="contact-action" data-toggle-emergency type="button">
+          <span class="contact-icon">⚠️</span>
+          <span class="contact-action-label">Emergency contact</span>
+          <span class="contact-action-meta" data-emergency-toggle-text>Show</span>
+        </button>
+        <div class="emergency-reveal" style="display:none;">
+          <strong>Emergency contact</strong>${c.emergency_contact || '—'}
+        </div>
+      </div>
+      <div class="contact-footer">
+        <a href="player.html?id=${c.id}">View full profile →</a>
+      </div>
+    </article>
+  `}).join('');
+}
+
+document.getElementById('contactsSearch').addEventListener('input', e => { searchQuery = e.target.value; render(); });
+document.getElementById('sortBy').addEventListener('change', e => { sortBy = e.target.value; render(); });
+document.getElementById('posFilters').addEventListener('click', e => {
+  const b = e.target.closest('.filter-pill'); if (!b) return;
+  document.querySelectorAll('#posFilters .filter-pill').forEach(p => p.classList.remove('active'));
+  b.classList.add('active'); posFilter = b.dataset.pos; render();
+});
+document.getElementById('contactsGrid').addEventListener('click', e => {
+  const btn = e.target.closest('[data-toggle-emergency]'); if (!btn) return;
+  const card = btn.closest('.contact-card');
+  const reveal = card.querySelector('.emergency-reveal');
+  const meta = btn.querySelector('[data-emergency-toggle-text]');
+  const isHidden = reveal.style.display === 'none';
+  reveal.style.display = isHidden ? 'block' : 'none';
+  meta.textContent = isHidden ? 'Hide' : 'Show';
+});
+
+const msgModal = document.getElementById('messageModal');
+document.getElementById('messageAllBtn').addEventListener('click', () => msgModal.classList.remove('hidden'));
+document.getElementById('closeMsgModal').addEventListener('click', () => msgModal.classList.add('hidden'));
+msgModal.addEventListener('click', e => { if (e.target === msgModal) msgModal.classList.add('hidden'); });
+
+document.getElementById('msgEmail').addEventListener('click', () => {
+  const emails = getFiltered().map(c => c.email).filter(Boolean).join(',');
+  window.location.href = `mailto:?bcc=${emails}&subject=England%20Masters%20Squad%20Update`;
+});
+document.getElementById('msgCopy').addEventListener('click', async () => {
+  const numbers = getFiltered().map(c => c.phone).filter(Boolean).join(', ');
+  try { await navigator.clipboard.writeText(numbers); alert('Numbers copied.'); }
+  catch { prompt('Copy these:', numbers); }
+});
+document.getElementById('msgWA').addEventListener('click', () => {
+  document.getElementById('msgInstructions').style.display = 'block';
+});
+
+loadContacts();
+</script>
+
+</body>
+</html>
