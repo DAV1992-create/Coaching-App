@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0C1B2E">
+<title>Matchday · England Masters</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="matchday.css">
+<script src="supabase-client.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<nav class="nav-top" aria-label="Main navigation">
+  <a class="nav-brand" href="dashboard.html" aria-label="Back">
+    <span style="font-size:18px;color:var(--text-secondary);">←</span>
+    <span class="nav-text">
+      <span class="nav-name">Matchday</span>
+      <span class="nav-sub" id="syncStatus">Live</span>
+    </span>
+  </a>
+  <div class="nav-actions">
+    <button class="btn btn-danger btn-sm" id="endMatchBtn" type="button">End match</button>
+  </div>
+</nav>
+
+<!-- ============== SETUP SCREEN ============== -->
+<main class="matchday-page" id="setupScreen">
+  <div style="padding: 20px;">
+    <header class="page-header">
+      <h1>New match</h1>
+      <p class="text-secondary">Pick your tournament, opponent and starting XI.</p>
+    </header>
+
+    <div class="card mb-16">
+      <div class="card-header"><div class="card-title">Match details</div></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label" for="setup-tournament">Tournament</label>
+          <select id="setup-tournament"><option value="">— No tournament linked —</option></select>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="setup-opponent">Opponent</label>
+            <input id="setup-opponent" type="text" placeholder="e.g. Wales Masters" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="setup-date">Date</label>
+            <input id="setup-date" type="date" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="setup-venue">Venue</label>
+          <input id="setup-venue" type="text" placeholder="e.g. Birmingham NIA">
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-16">
+      <div class="card-header">
+        <div class="card-title">Select starting XI (<span id="startCount">0</span>)</div>
+        <div class="text-small text-secondary">Tap to add/remove</div>
+      </div>
+      <div id="setupPlayerList"></div>
+    </div>
+
+    <div class="complete-match">
+      <button class="btn btn-primary" id="startMatchBtn" type="button">Start match →</button>
+    </div>
+  </div>
+</main>
+
+<!-- ============== MATCH SCREEN ============== -->
+<main class="matchday-page hidden" id="matchScreen">
+
+  <section class="match-header">
+    <div class="match-tournament" id="tournamentLabel">—</div>
+    <div class="match-teams">
+      <div class="team-name team-home">ENG MASTERS</div>
+      <div class="team-vs">—</div>
+      <div class="team-name team-away" id="opponentLabel">OPPONENT</div>
+    </div>
+
+    <div class="score-display">
+      <button class="score-btn home" id="homePlusBtn" type="button" aria-label="Add England goal">+</button>
+      <span class="score-num home" id="homeScore">0</span>
+      <span class="score-dash">—</span>
+      <span class="score-num away" id="awayScore">0</span>
+      <button class="score-btn away" id="awayPlusBtn" type="button" aria-label="Add opponent goal">+</button>
+    </div>
+
+    <div class="period-pills" role="tablist">
+      <button class="period-pill active" data-period="1" type="button">P1</button>
+      <button class="period-pill" data-period="2" type="button">P2</button>
+      <button class="period-pill" data-period="3" type="button">P3</button>
+      <button class="period-pill" data-period="4" type="button">P4</button>
+    </div>
+
+    <div class="timer-row">
+      <span class="timer" id="timerDisplay">00:00</span>
+      <button class="timer-btn" id="timerBtn" type="button">Start</button>
+    </div>
+  </section>
+
+  <div class="section-label">Starting XI</div>
+  <div class="lineup-grid" id="startingXI"></div>
+
+  <div class="section-label">Bench</div>
+  <div class="lineup-grid bench-section" id="benchList"></div>
+
+  <div class="match-log">
+    <div class="log-header" id="logHeader">
+      <span><span id="logCount">Match log (0 events)</span></span>
+      <span class="log-chevron">▼</span>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </div>
+
+  <div class="complete-match">
+    <button class="btn btn-primary" id="completeMatchBtn" type="button">Complete match &amp; write report →</button>
+  </div>
+</main>
+
+<nav class="nav-tabs" aria-label="Mobile navigation">
+  <a class="tab-item" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a>
+  <a class="tab-item" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Squad</a>
+  <a class="tab-item active" href="matchday.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Matchday</a>
+  <a class="tab-item" href="stats.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Stats</a>
+  <a class="tab-item" href="contacts.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>More</a>
+</nav>
+
+<div class="sheet-overlay" id="sheetOverlay"></div>
+<div class="bottom-sheet" id="bottomSheet" role="dialog" aria-modal="true">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-title" id="sheetTitle">Player</div>
+    <div class="sheet-sub" id="sheetSub">—</div>
+  </div>
+  <div class="sheet-actions">
+    <button class="sheet-action-btn goal"   data-action="goal"   type="button"><span class="sheet-emoji">⚽</span>Goal</button>
+    <button class="sheet-action-btn yellow" data-action="yellow" type="button"><span class="sheet-emoji">🟨</span>Yellow card</button>
+    <button class="sheet-action-btn red"    data-action="red"    type="button"><span class="sheet-emoji">🟥</span>Red card</button>
+    <button class="sheet-action-btn sub"    data-action="sub"    type="button"><span class="sheet-emoji">🔄</span>Substitute off</button>
+  </div>
+  <button class="sheet-cancel" type="button" id="sheetCancel">Cancel</button>
+</div>
+
+<div class="modal-overlay hidden" id="subModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Choose substitute</div>
+      <button class="btn btn-ghost btn-icon" type="button" id="closeSubModal">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div class="scorer-list" id="subList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="scorerModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Who scored?</div>
+      <button class="btn btn-ghost btn-icon" type="button" id="closeScorerModal">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div class="scorer-list" id="scorerList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Matchday — offline-first
+   Working store: localStorage 'em_matchday_pending'
+   Sync to Supabase only on "Complete match"
+   ============================================================ */
+const MD_PEND = 'em_matchday_pending';
+const MD_LAST_MATCH = 'em_last_match_id';
+
+const posClass = { GK:'avatar-gk', DEF:'avatar-def', MID:'avatar-mid', FWD:'avatar-fwd' };
+function initials(name) { return (name||'').split(/\s+/).map(s=>s[0]).slice(0,2).join('').toUpperCase(); }
+
+let allPlayers = [];
+let tournaments = [];
+let orgId = null;
+
+let data = null;            // active match data
+let timerInterval = null;
+let activeSheetPlayerId = null;
+let subOffPlayer = null;
+
+/* ----------- Load roster + tournaments ----------- */
+async function bootstrap() {
+  const ctx = await window.auth.requireAuth(); if (!ctx) return;
+  if (ctx.demo) { document.getElementById('syncStatus').textContent = 'Demo'; return; }
+  orgId = ctx.orgId;
+  const supa = await window.sb();
+
+  const { data: playersData } = await supa.from('players').select('*').eq('org_id', orgId).order('shirt_number');
+  allPlayers = (playersData || []).map(p => ({
+    ...p,
+    initials: p.initials || initials(p.name),
+    posClass: posClass[p.position] || 'avatar-default'
+  }));
+
+  const today = new Date().toISOString().slice(0,10);
+  const { data: tData } = await supa.from('tournaments').select('*').eq('org_id', orgId).gte('date', today).order('date');
+  tournaments = tData || [];
+
+  // Resume if a pending match exists
+  const pending = localStorage.getItem(MD_PEND);
+  if (pending) {
+    try {
+      data = JSON.parse(pending);
+      showMatchScreen();
+      render();
+      return;
+    } catch {}
+  }
+  showSetupScreen();
+}
+
+function showSetupScreen() {
+  document.getElementById('setupScreen').classList.remove('hidden');
+  document.getElementById('matchScreen').classList.add('hidden');
+  document.getElementById('endMatchBtn').style.display = 'none';
+
+  const tSel = document.getElementById('setup-tournament');
+  tSel.innerHTML = '<option value="">— No tournament linked —</option>' + tournaments.map(t => `<option value="${t.id}" data-name="${t.name}" data-venue="${t.venue||''}">${t.name} · ${new Date(t.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</option>`).join('');
+
+  // Default date today
+  document.getElementById('setup-date').value = new Date().toISOString().slice(0,10);
+
+  tSel.addEventListener('change', () => {
+    const opt = tSel.options[tSel.selectedIndex];
+    if (opt && opt.dataset.venue) document.getElementById('setup-venue').value = opt.dataset.venue;
+  });
+
+  // Player selection list
+  const selected = new Set();
+  function renderSetupList() {
+    const wrap = document.getElementById('setupPlayerList');
+    if (allPlayers.length === 0) {
+      wrap.innerHTML = '<div class="player-list-empty">No players in squad. Add players from the dashboard first.</div>';
+      return;
+    }
+    wrap.innerHTML = allPlayers.map(p => `
+      <button class="player-slot" data-id="${p.id}" type="button" style="${selected.has(p.id)?'background:var(--blue-light);':''}">
+        <span class="avatar ${p.posClass}">${p.initials}</span>
+        <div class="slot-info">
+          <div class="slot-name">${p.name}</div>
+          <div class="slot-pos">${p.position || ''}</div>
+        </div>
+        <span class="slot-num">${p.shirt_number?'#'+p.shirt_number:''}</span>
+        ${selected.has(p.id) ? '<span style="color:var(--blue);font-size:18px;">✓</span>' : ''}
+      </button>
+    `).join('');
+    document.getElementById('startCount').textContent = selected.size;
+  }
+  renderSetupList();
+
+  document.getElementById('setupPlayerList').addEventListener('click', e => {
+    const slot = e.target.closest('.player-slot'); if (!slot) return;
+    const id = slot.dataset.id;
+    if (selected.has(id)) selected.delete(id);
+    else if (selected.size < 11) selected.add(id);
+    else alert('Maximum 11 starters. Tap one to remove.');
+    renderSetupList();
+  });
+
+  document.getElementById('startMatchBtn').onclick = () => {
+    const opponent = document.getElementById('setup-opponent').value.trim();
+    const date = document.getElementById('setup-date').value;
+    if (!opponent) { alert('Enter opponent name.'); return; }
+    if (!date) { alert('Pick a match date.'); return; }
+    if (selected.size === 0) { alert('Select at least one starter.'); return; }
+
+    const lineupIds = [...selected];
+    const lineup = lineupIds.map(id => allPlayers.find(p => p.id === id));
+    const bench = allPlayers.filter(p => !selected.has(p.id));
+
+    const tSel = document.getElementById('setup-tournament');
+    const tOpt = tSel.options[tSel.selectedIndex];
+
+    data = {
+      org_id: orgId,
+      tournament_id: tSel.value || null,
+      tournament_name: tOpt ? (tOpt.dataset.name || tOpt.textContent.split(' · ')[0]) : '',
+      opponent,
+      match_date: date,
+      venue: document.getElementById('setup-venue').value.trim(),
+      score: { home: 0, away: 0 },
+      period: 1,
+      timerSeconds: 0,
+      timerRunning: false,
+      lineup, bench,
+      events: [],
+      flags: {}
+    };
+    save();
+    showMatchScreen();
+    render();
+  };
+}
+
+function showMatchScreen() {
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('matchScreen').classList.remove('hidden');
+  document.getElementById('endMatchBtn').style.display = '';
+}
+
+function save() {
+  try { localStorage.setItem(MD_PEND, JSON.stringify(data)); }
+  catch (e) { console.warn(e); }
+}
+
+function render() {
+  document.getElementById('homeScore').textContent = data.score.home;
+  document.getElementById('awayScore').textContent = data.score.away;
+  document.getElementById('opponentLabel').textContent = (data.opponent || 'OPPONENT').toUpperCase();
+  const dateLabel = new Date(data.match_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  document.getElementById('tournamentLabel').textContent = data.tournament_name ? `${data.tournament_name} · ${dateLabel}` : dateLabel;
+
+  document.querySelectorAll('.period-pill').forEach(p =>
+    p.classList.toggle('active', parseInt(p.dataset.period,10) === data.period)
+  );
+
+  updateTimer();
+  document.getElementById('timerBtn').textContent = data.timerRunning ? 'Pause' : 'Start';
+  document.getElementById('timerBtn').classList.toggle('paused', !data.timerRunning);
+
+  document.getElementById('startingXI').innerHTML = data.lineup.map(p => slotHtml(p, false)).join('');
+  document.getElementById('benchList').innerHTML  = data.bench.map(p => slotHtml(p, true)).join('');
+  renderLog();
+}
+
+function slotHtml(p, isBench) {
+  const flag = data.flags[p.id];
+  const flagClass = flag ? `has-${flag}` : '';
+  return `
+    <button class="player-slot ${flagClass}" data-player-id="${p.id}" data-bench="${isBench}" type="button">
+      <span class="avatar ${p.posClass}">${p.initials}</span>
+      <div class="slot-info">
+        <div class="slot-name">${p.name}</div>
+        <div class="slot-pos">${p.position||''}</div>
+      </div>
+      <span class="slot-num">${p.shirt_number?'#'+p.shirt_number:''}</span>
+    </button>
+  `;
+}
+
+function updateTimer() {
+  const m = Math.floor(data.timerSeconds / 60);
+  const s = data.timerSeconds % 60;
+  document.getElementById('timerDisplay').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function renderLog() {
+  const sorted = [...data.events].sort((a,b) => b.time - a.time);
+  document.getElementById('logCount').textContent = `Match log (${data.events.length} event${data.events.length===1?'':'s'})`;
+  document.getElementById('logList').innerHTML = sorted.map(ev => {
+    const dotClass = ev.type === 'goal' ? 'dot-green'
+                   : ev.type === 'yellow' ? 'dot-amber'
+                   : ev.type === 'red' ? 'dot-red'
+                   : ev.type === 'sub' ? 'dot-blue'
+                   : ev.type === 'goal_opponent' ? 'dot-red'
+                   : 'dot-gray';
+    const timeLabel = ev.type === 'period' ? 'P'+ev.period : `${ev.time}'`;
+    return `<div class="log-event"><span class="dot ${dotClass}"></span><span class="log-time">${timeLabel}</span><span class="log-text">${ev.text}</span></div>`;
+  }).join('');
+}
+
+/* Score buttons */
+document.getElementById('homePlusBtn').addEventListener('click', () => openScorerModal());
+document.getElementById('awayPlusBtn').addEventListener('click', () => {
+  data.score.away += 1;
+  data.events.push({ time: Math.floor(data.timerSeconds/60), period: data.period, type: 'goal_opponent', text: `Goal — ${data.opponent}` });
+  save(); render();
+});
+
+/* Scorer modal */
+const scorerModal = document.getElementById('scorerModal');
+function openScorerModal() {
+  document.getElementById('scorerList').innerHTML = data.lineup.map(p => `
+    <button class="scorer-item" data-id="${p.id}" type="button">
+      <span class="avatar ${p.posClass}">${p.initials}</span>
+      <div class="slot-info"><div class="slot-name">${p.name}</div><div class="slot-pos">${p.position||''}</div></div>
+      <span class="slot-num">${p.shirt_number?'#'+p.shirt_number:''}</span>
+    </button>`).join('');
+  scorerModal.classList.remove('hidden');
+}
+document.getElementById('closeScorerModal').addEventListener('click', () => scorerModal.classList.add('hidden'));
+scorerModal.addEventListener('click', e => { if (e.target === scorerModal) scorerModal.classList.add('hidden'); });
+document.getElementById('scorerList').addEventListener('click', e => {
+  const btn = e.target.closest('.scorer-item'); if (!btn) return;
+  const player = data.lineup.find(p => p.id === btn.dataset.id); if (!player) return;
+  data.score.home += 1;
+  data.events.push({ time: Math.floor(data.timerSeconds/60), period: data.period, type: 'goal', player_id: player.id, text: `Goal — ${player.name}${player.shirt_number?' (#'+player.shirt_number+')':''}` });
+  data.flags[player.id] = 'goal';
+  scorerModal.classList.add('hidden'); save(); render();
+});
+
+/* Period pills */
+document.querySelectorAll('.period-pill').forEach(p => {
+  p.addEventListener('click', () => {
+    const newP = parseInt(p.dataset.period, 10);
+    if (newP !== data.period) data.events.push({ time: Math.floor(data.timerSeconds/60), period: newP, type:'period', text:`Period ${newP} start` });
+    data.period = newP; save(); render();
+  });
+});
+
+/* Timer */
+function startTimer() {
+  if (timerInterval) return;
+  data.timerRunning = true;
+  let c = 0;
+  timerInterval = setInterval(() => {
+    data.timerSeconds += 1; updateTimer();
+    if (++c >= 10) { save(); c = 0; }
+  }, 1000);
+  document.getElementById('timerBtn').textContent = 'Pause';
+  document.getElementById('timerBtn').classList.add('paused');
+}
+function pauseTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  data.timerRunning = false; save();
+  document.getElementById('timerBtn').textContent = 'Start';
+  document.getElementById('timerBtn').classList.remove('paused');
+}
+document.getElementById('timerBtn').addEventListener('click', () => {
+  data.timerRunning ? pauseTimer() : startTimer();
+});
+
+/* Slot tap → sheet */
+document.getElementById('startingXI').addEventListener('click', handleSlotClick);
+document.getElementById('benchList').addEventListener('click', handleSlotClick);
+function handleSlotClick(e) {
+  const slot = e.target.closest('.player-slot'); if (!slot) return;
+  if (slot.dataset.bench === 'true') return;
+  const player = data.lineup.find(p => p.id === slot.dataset.playerId); if (!player) return;
+  activeSheetPlayerId = player.id;
+  document.getElementById('sheetTitle').textContent = player.name;
+  document.getElementById('sheetSub').textContent = `${player.position||''}${player.shirt_number?' · #'+player.shirt_number:''}`;
+  openSheet();
+}
+
+const sheet = document.getElementById('bottomSheet');
+const sheetOverlay = document.getElementById('sheetOverlay');
+function openSheet() { sheet.classList.add('open'); sheetOverlay.classList.add('open'); }
+function closeSheet() { sheet.classList.remove('open'); sheetOverlay.classList.remove('open'); }
+document.getElementById('sheetCancel').addEventListener('click', closeSheet);
+sheetOverlay.addEventListener('click', closeSheet);
+
+document.querySelectorAll('.sheet-action-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const action = btn.dataset.action;
+    const player = data.lineup.find(p => p.id === activeSheetPlayerId); if (!player) return;
+    const t = Math.floor(data.timerSeconds/60);
+    if (action === 'goal') {
+      data.score.home += 1;
+      data.events.push({ time:t, period:data.period, type:'goal', player_id:player.id, text:`Goal — ${player.name}${player.shirt_number?' (#'+player.shirt_number+')':''}` });
+      data.flags[player.id] = 'goal';
+    } else if (action === 'yellow') {
+      data.events.push({ time:t, period:data.period, type:'yellow', player_id:player.id, text:`Yellow card — ${player.name}` });
+      data.flags[player.id] = 'yellow';
+    } else if (action === 'red') {
+      data.events.push({ time:t, period:data.period, type:'red', player_id:player.id, text:`Red card — ${player.name}` });
+      data.flags[player.id] = 'red';
+    } else if (action === 'sub') {
+      openSubModal(player); return;
+    }
+    save(); render(); closeSheet();
+  });
+});
+
+/* Sub modal */
+const subModal = document.getElementById('subModal');
+function openSubModal(off) {
+  subOffPlayer = off;
+  document.getElementById('subList').innerHTML = data.bench.map(p => `
+    <button class="scorer-item" data-id="${p.id}" type="button">
+      <span class="avatar ${p.posClass}">${p.initials}</span>
+      <div class="slot-info"><div class="slot-name">${p.name}</div><div class="slot-pos">${p.position||''}</div></div>
+      <span class="slot-num">${p.shirt_number?'#'+p.shirt_number:''}</span>
+    </button>`).join('');
+  closeSheet(); subModal.classList.remove('hidden');
+}
+document.getElementById('closeSubModal').addEventListener('click', () => subModal.classList.add('hidden'));
+subModal.addEventListener('click', e => { if (e.target === subModal) subModal.classList.add('hidden'); });
+document.getElementById('subList').addEventListener('click', e => {
+  const btn = e.target.closest('.scorer-item'); if (!btn) return;
+  const on = data.bench.find(p => p.id === btn.dataset.id);
+  if (!on || !subOffPlayer) return;
+  const offIdx = data.lineup.findIndex(p => p.id === subOffPlayer.id);
+  const onIdx  = data.bench.findIndex(p => p.id === on.id);
+  data.lineup[offIdx] = on;
+  data.bench[onIdx]   = subOffPlayer;
+  data.events.push({ time: Math.floor(data.timerSeconds/60), period: data.period, type: 'sub', text: `Sub: ${on.name} on ← ${subOffPlayer.name} off` });
+  subModal.classList.add('hidden'); save(); render();
+});
+
+/* Log toggle */
+document.getElementById('logHeader').addEventListener('click', () => {
+  document.getElementById('logHeader').classList.toggle('collapsed');
+  document.getElementById('logList').classList.toggle('collapsed');
+});
+
+/* ============================================================
+   COMPLETE MATCH → batch sync to Supabase
+   ============================================================ */
+async function completeMatch() {
+  pauseTimer(); save();
+  document.getElementById('syncStatus').textContent = 'Syncing…';
+
+  const supa = await window.sb();
+
+  try {
+    // 1) Insert match row
+    const { data: newMatch, error: mErr } = await supa.from('matches').insert({
+      org_id: data.org_id,
+      tournament_id: data.tournament_id,
+      opponent: data.opponent,
+      match_date: data.match_date,
+      venue: data.venue || null,
+      period: data.period,
+      timer_seconds: data.timerSeconds,
+      score_home: data.score.home,
+      score_away: data.score.away,
+      status: 'complete',
+      completed_at: new Date().toISOString()
+    }).select().single();
+    if (mErr) throw mErr;
+
+    // 2) Insert lineups (starters + bench)
+    const lineupRows = [
+      ...data.lineup.map((p, i) => ({ match_id: newMatch.id, player_id: p.id, is_starter: true,  position_in_lineup: i })),
+      ...data.bench.map((p, i)  => ({ match_id: newMatch.id, player_id: p.id, is_starter: false, position_in_lineup: i }))
+    ];
+    if (lineupRows.length > 0) {
+      const { error: lErr } = await supa.from('match_lineups').insert(lineupRows);
+      if (lErr) throw lErr;
+    }
+
+    // 3) Insert events
+    if (data.events.length > 0) {
+      const eventRows = data.events.map(ev => ({
+        match_id: newMatch.id,
+        time_min: ev.time || 0,
+        period: ev.period || 1,
+        event_type: ev.type,
+        player_id: ev.player_id || null,
+        text: ev.text || ''
+      }));
+      const { error: eErr } = await supa.from('match_events').insert(eventRows);
+      if (eErr) throw eErr;
+    }
+
+    // Success: clear localStorage, redirect to report.html with this match
+    localStorage.removeItem(MD_PEND);
+    localStorage.setItem(MD_LAST_MATCH, newMatch.id);
+    window.location.href = `report.html?match_id=${newMatch.id}`;
+  } catch (err) {
+    console.error(err);
+    document.getElementById('syncStatus').textContent = 'Sync failed';
+    alert(`Couldn't sync to server: ${err.message}\n\nYour data is safe in this browser. Try again when you have signal.`);
+  }
+}
+
+document.getElementById('completeMatchBtn').addEventListener('click', completeMatch);
+document.getElementById('endMatchBtn').addEventListener('click', () => {
+  if (confirm('End this match and go to the report? Make sure scoring is final.')) completeMatch();
+});
+
+window.addEventListener('beforeunload', () => { if (data) save(); });
+
+bootstrap();
+</script>
+
+</body>
+</html>
