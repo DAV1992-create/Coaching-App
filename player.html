@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Player profile — England Masters coaching platform">
+<title>Player Profile · England Masters</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="player.css">
+<script src="supabase-client.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<nav class="nav-top" aria-label="Main navigation">
+  <a class="nav-brand" href="dashboard.html">
+    <span class="nav-badge">EM</span>
+    <span class="nav-text">
+      <span class="nav-name">England Masters</span>
+      <span class="nav-sub">Men O45s</span>
+    </span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="dashboard.html">Dashboard</a>
+    <a class="nav-link active" href="dashboard.html">Squad</a>
+    <a class="nav-link" href="matchday.html">Matchday</a>
+    <a class="nav-link" href="stats.html">Stats</a>
+    <a class="nav-link" href="contacts.html">Contacts</a>
+  </div>
+  <div class="nav-actions">
+    <a class="btn btn-sm" href="dashboard.html">← Squad</a>
+  </div>
+</nav>
+
+<main class="page">
+
+  <section class="profile-header">
+    <div class="profile-top">
+      <span class="avatar avatar-xl avatar-default" id="profileAvatar">—</span>
+      <div class="profile-meta">
+        <div class="profile-title-row">
+          <h1 id="profileName">Loading…</h1>
+          <span class="shirt-pill hidden" id="profileShirt">#—</span>
+        </div>
+        <div class="profile-sub" id="profileClub">—</div>
+        <div class="profile-badges">
+          <span class="badge badge-gray" id="profileStatus">—</span>
+          <span class="badge badge-green hidden" id="profileElig">✓ O45 Eligible</span>
+        </div>
+        <div class="view-toggle" role="tablist">
+          <button class="active" data-view="coach" type="button">Coach view</button>
+          <button data-view="player" type="button">Player view</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-stats">
+      <div class="qs-item"><div class="qs-num" id="qsCaps">—</div><div class="qs-label">Caps</div></div>
+      <div class="qs-item"><div class="qs-num" id="qsGoals">—</div><div class="qs-label">Goals</div></div>
+      <div class="qs-item"><div class="qs-num" id="qsAssists">—</div><div class="qs-label">Assists</div></div>
+      <div class="qs-item"><div class="qs-num" id="qsCards">—</div><div class="qs-label">Cards</div></div>
+    </div>
+
+    <div class="action-buttons">
+      <a class="btn" id="callBtn" href="#">📞 Call</a>
+      <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a class="btn" id="emailBtn" href="#">✉️ Email</a>
+      <button class="btn btn-primary" id="editBtn" type="button">Edit</button>
+      <button class="btn btn-danger" id="deleteBtn" type="button">Delete</button>
+    </div>
+  </section>
+
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" data-tab="overview" type="button">Overview</button>
+    <button class="tab-btn" data-tab="stats" type="button">Stats</button>
+    <button class="tab-btn" data-tab="history" type="button">History</button>
+    <button class="tab-btn" data-tab="notes" id="notesTabBtn" type="button">Notes</button>
+  </nav>
+
+  <!-- Overview -->
+  <section class="tab-content active" id="tab-overview">
+    <div class="tab-grid">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Personal details</div></div>
+        <div class="card-body" id="personalDetails"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Availability</div></div>
+        <div class="card-body" id="availBlock">
+          <div class="text-secondary text-small">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-16">
+      <div class="card-header"><div class="card-title">Status history</div></div>
+      <div class="card-body" id="statusHistory">
+        <div class="text-secondary text-small">No history yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="tab-content" id="tab-stats">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Career totals</div></div>
+      <div class="card-body">
+        <div class="grid-stats">
+          <div class="stat-card"><div class="stat-label">Caps</div><div class="stat-value" id="careerCaps">—</div></div>
+          <div class="stat-card"><div class="stat-label">Goals</div><div class="stat-value" id="careerGoals">—</div></div>
+          <div class="stat-card"><div class="stat-label">Assists</div><div class="stat-value" id="careerAssists">—</div></div>
+          <div class="stat-card"><div class="stat-label">Cards</div><div class="stat-value" id="careerCards">—</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- History -->
+  <section class="tab-content" id="tab-history">
+    <div id="historyList"><div class="text-secondary text-small">No match history yet.</div></div>
+  </section>
+
+  <!-- Notes -->
+  <section class="tab-content" id="tab-notes">
+    <div class="card mb-16">
+      <div class="card-header"><div class="card-title">Coaching notes</div></div>
+      <div class="card-body">
+        <textarea id="newNoteText" placeholder="Add a coaching note about this player..."></textarea>
+        <button class="btn btn-primary mt-12" id="addNoteBtn" type="button">+ Add note</button>
+      </div>
+    </div>
+    <div id="notesList"></div>
+  </section>
+
+</main>
+
+<nav class="nav-tabs" aria-label="Mobile navigation">
+  <a class="tab-item" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a>
+  <a class="tab-item active" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Squad</a>
+  <a class="tab-item" href="matchday.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Matchday</a>
+  <a class="tab-item" href="stats.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Stats</a>
+  <a class="tab-item" href="contacts.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>More</a>
+</nav>
+
+<script>
+const playerId = new URLSearchParams(window.location.search).get('id');
+const posClass = { GK:'avatar-gk', DEF:'avatar-def', MID:'avatar-mid', FWD:'avatar-fwd' };
+const statusBadgeClass = { main:'badge-main', ntr:'badge-ntr', som:'badge-som', 'som-ntr':'badge-som-ntr' };
+const statusLabel = { main:'Main squad', ntr:'NTR', som:'SOM', 'som-ntr':'SOM NTR' };
+
+let player = null;
+
+async function loadPlayer() {
+  const ctx = await window.auth.requireAuth(); if (!ctx) return;
+  if (ctx.demo) return;
+  if (!playerId) { document.getElementById('profileName').textContent = 'Player not found'; return; }
+  const supa = await window.sb();
+
+  const { data, error } = await supa.from('players').select('*').eq('id', playerId).single();
+  if (error || !data) { document.getElementById('profileName').textContent = 'Player not found'; return; }
+  player = data;
+  renderHeader();
+  renderPersonal();
+  await Promise.all([renderAvailability(), renderHistory(), renderNotes(), renderStatusHistory()]);
+}
+
+function renderHeader() {
+  const name = player.name || '—';
+  const init = player.initials || name.split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('profileAvatar').textContent = init;
+  document.getElementById('profileAvatar').className = `avatar avatar-xl ${posClass[player.position] || 'avatar-default'}`;
+  document.getElementById('profileName').textContent = name;
+  document.title = `${name} · Player profile`;
+  if (player.shirt_number) {
+    document.getElementById('profileShirt').textContent = '#' + player.shirt_number;
+    document.getElementById('profileShirt').classList.remove('hidden');
+  }
+  document.getElementById('profileClub').textContent = [player.club, player.area, player.position].filter(Boolean).join(' · ');
+  const statusEl = document.getElementById('profileStatus');
+  statusEl.className = 'badge ' + (statusBadgeClass[player.status] || 'badge-gray');
+  statusEl.textContent = statusLabel[player.status] || player.status || '—';
+  if (player.eligibility) {
+    document.getElementById('profileElig').textContent = `✓ ${player.eligibility} Eligible`;
+    document.getElementById('profileElig').classList.remove('hidden');
+  }
+
+  // Action buttons
+  document.getElementById('callBtn').href = player.phone ? `tel:${player.phone}` : '#';
+  document.getElementById('waBtn').href  = player.phone ? `https://wa.me/${player.phone.replace(/[^0-9]/g,'')}` : '#';
+  document.getElementById('emailBtn').href = player.email ? `mailto:${player.email}` : '#';
+}
+
+function renderPersonal() {
+  const rows = [
+    ['Date of birth', player.dob ? new Date(player.dob).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '—'],
+    ['Phone', player.phone ? `<a href="tel:${player.phone}">${player.phone}</a>` : '—'],
+    ['Email', player.email ? `<a href="mailto:${player.email}">${player.email}</a>` : '—'],
+    ['Emergency', player.emergency_contact || '—', 'coach-only'],
+    ['Club', player.club || '—'],
+    ['Area', player.area || '—'],
+    ['Preferred foot', player.preferred_foot || '—'],
+    ['Stick hand', player.stick_hand || '—']
+  ];
+  document.getElementById('personalDetails').innerHTML = rows.map(r => `
+    <div class="detail-row${r[2] ? ' ' + r[2] : ''}">
+      <span class="detail-label">${r[0]}</span>
+      <span class="detail-value">${r[1]}</span>
+    </div>
+  `).join('');
+}
+
+async function renderAvailability() {
+  const supa = await window.sb();
+  const today = new Date().toISOString().slice(0,10);
+  const { data: tournaments } = await supa.from('tournaments').select('*').eq('org_id', player.org_id).gte('date', today).order('date').limit(5);
+  const { data: avails } = await supa.from('availability').select('*').eq('player_id', player.id);
+  const availByTourn = {};
+  (avails || []).forEach(a => availByTourn[a.tournament_id] = a.status);
+
+  const wrap = document.getElementById('availBlock');
+  if (!tournaments || tournaments.length === 0) {
+    wrap.innerHTML = '<div class="text-secondary text-small">No upcoming tournaments.</div>';
+    return;
+  }
+  wrap.innerHTML = tournaments.map(t => `
+    <div class="avail-tournament" data-tourn="${t.id}">
+      <div class="avail-name">${t.name}</div>
+      <div class="avail-meta">${new Date(t.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${t.venue?' · '+t.venue:''}</div>
+      <div class="avail-buttons">
+        <button class="avail-btn ${availByTourn[t.id]==='yes'?'active':''}" data-status="yes">Yes</button>
+        <button class="avail-btn ${availByTourn[t.id]==='maybe'?'active':''}" data-status="maybe">Maybe</button>
+        <button class="avail-btn ${availByTourn[t.id]==='no'?'active':''}" data-status="no">No</button>
+      </div>
+    </div>
+  `).join('');
+
+  wrap.querySelectorAll('.avail-tournament').forEach(t => {
+    const tid = t.dataset.tourn;
+    t.querySelectorAll('.avail-btn').forEach(b => {
+      b.addEventListener('click', async () => {
+        t.querySelectorAll('.avail-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        await supa.from('availability').upsert({
+          player_id: player.id, tournament_id: tid, status: b.dataset.status, updated_at: new Date().toISOString()
+        }, { onConflict: 'player_id,tournament_id' });
+      });
+    });
+  });
+}
+
+async function renderHistory() {
+  const supa = await window.sb();
+  const { data: lineups } = await supa.from('match_lineups')
+    .select('*, matches(*, tournaments(*))').eq('player_id', player.id);
+  const matches = (lineups || []).map(l => l.matches).filter(Boolean);
+  const list = document.getElementById('historyList');
+  if (matches.length === 0) { list.innerHTML = '<div class="text-secondary text-small">No match history yet.</div>'; return; }
+  list.innerHTML = matches.map(m => `
+    <div class="history-entry">
+      <div class="history-top">
+        <div>
+          <div class="history-name">${m.tournaments ? m.tournaments.name + ' · v ' + m.opponent : 'vs ' + m.opponent}</div>
+          <div class="history-meta">${m.match_date}${m.venue?' · '+m.venue:''}</div>
+        </div>
+        <span class="badge badge-green">Squad</span>
+      </div>
+      <div class="history-stats">ENG ${m.score_home} – ${m.score_away} ${m.opponent.toUpperCase()}</div>
+    </div>
+  `).join('');
+}
+
+async function renderStatusHistory() {
+  const supa = await window.sb();
+  const { data } = await supa.from('status_history').select('*').eq('player_id', player.id).order('changed_at', { ascending: false });
+  const wrap = document.getElementById('statusHistory');
+  if (!data || data.length === 0) { wrap.innerHTML = '<div class="text-secondary text-small">No status changes recorded.</div>'; return; }
+  wrap.innerHTML = data.map(h => `
+    <div class="timeline-item">
+      <span class="timeline-dot"></span>
+      <div>
+        <div class="timeline-date">${new Date(h.changed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+        <div class="timeline-text">Changed to ${statusLabel[h.new_status] || h.new_status}${h.note ? ' — ' + h.note : ''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* Notes */
+async function renderNotes() {
+  const supa = await window.sb();
+  const { data } = await supa.from('notes').select('*').eq('player_id', player.id).order('created_at', { ascending: false });
+  const list = document.getElementById('notesList');
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div class="text-secondary text-center" style="padding:32px;">No notes yet.</div>';
+    return;
+  }
+  list.innerHTML = data.map(n => {
+    const d = new Date(n.created_at);
+    const ts = d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + ' · ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const flagBtns = ['form','injury','excellent','leadership'].map(f => {
+      const labels = { form:'Form concern', injury:'Injury', excellent:'Excellent', leadership:'Leadership' };
+      const active = (n.flags||[]).includes(f) ? ' active' : '';
+      return `<button class="flag-btn${active}" data-flag="${f}" data-note="${n.id}" type="button">${labels[f]}</button>`;
+    }).join('');
+    return `
+      <div class="note-entry" data-note-id="${n.id}">
+        <div class="note-time">${ts}</div>
+        <div class="note-body">${escapeHtml(n.body)}</div>
+        <div class="note-flags">${flagBtns}</div>
+        <div class="note-actions">
+          <button class="btn btn-sm" data-action="delete" data-note="${n.id}" type="button">Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+document.getElementById('addNoteBtn').addEventListener('click', async () => {
+  const txt = document.getElementById('newNoteText').value.trim();
+  if (!txt) return;
+  const supa = await window.sb();
+  const user = await window.auth.getUser();
+  const { error } = await supa.from('notes').insert({ player_id: player.id, body: txt, author_id: user.id, flags: [] });
+  if (error) { alert(error.message); return; }
+  document.getElementById('newNoteText').value = '';
+  renderNotes();
+});
+
+document.getElementById('notesList').addEventListener('click', async e => {
+  const supa = await window.sb();
+  const flag = e.target.closest('.flag-btn');
+  const action = e.target.closest('[data-action]');
+  if (flag) {
+    const id = flag.dataset.note;
+    const { data: n } = await supa.from('notes').select('flags').eq('id', id).single();
+    if (!n) return;
+    const flags = n.flags || [];
+    const newFlags = flags.includes(flag.dataset.flag) ? flags.filter(x => x !== flag.dataset.flag) : [...flags, flag.dataset.flag];
+    await supa.from('notes').update({ flags: newFlags }).eq('id', id);
+    renderNotes();
+  } else if (action && action.dataset.action === 'delete') {
+    if (!confirm('Delete this note?')) return;
+    await supa.from('notes').delete().eq('id', action.dataset.note);
+    renderNotes();
+  }
+});
+
+/* Tabs */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* View toggle */
+document.querySelector('.view-toggle').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('.view-toggle button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  const isPlayer = b.dataset.view === 'player';
+  document.querySelectorAll('.coach-only, #notesTabBtn').forEach(el => el.style.display = isPlayer ? 'none' : '');
+});
+
+/* Edit (inline prompt) */
+document.getElementById('editBtn').addEventListener('click', async () => {
+  const newStatus = prompt(`Change status (current: ${player.status}). Enter one of: main, ntr, som, som-ntr`, player.status);
+  if (!newStatus || !['main','ntr','som','som-ntr'].includes(newStatus)) return;
+  const supa = await window.sb();
+  const user = await window.auth.getUser();
+  await supa.from('players').update({ status: newStatus }).eq('id', player.id);
+  await supa.from('status_history').insert({ player_id: player.id, old_status: player.status, new_status: newStatus, changed_by: user.id });
+  loadPlayer();
+});
+
+/* Delete */
+document.getElementById('deleteBtn').addEventListener('click', async () => {
+  if (!confirm(`Delete ${player.name}? This removes them and all their records.`)) return;
+  const supa = await window.sb();
+  await supa.from('players').delete().eq('id', player.id);
+  window.location.href = 'dashboard.html';
+});
+
+loadPlayer();
+</script>
+
+</body>
+</html>
